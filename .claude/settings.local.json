@@ -16,7 +16,9 @@
       "Bash(git push *)",
       "Bash(git commit -m 'chore: add vercel.json for deployment config *)",
       "WebFetch(domain:mio-gallery.com)",
-      "Bash(git commit -m 'design: ferah beyaz/krem tema — mio-gallery referansı *)"
+      "Bash(git commit -m 'design: ferah beyaz/krem tema — mio-gallery referansı *)",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\emre5\\\\madameshelda\\\\madameshelda\\\\src\\\\components\\\\admin\")",
+      "Bash(git commit -m 'feat: admin paneli — dashboard, eserler, workshoplar, başvurular *)"
     ]
   }
 }
