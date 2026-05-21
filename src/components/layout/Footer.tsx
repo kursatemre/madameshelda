@@ -13,7 +13,7 @@ function InstagramIcon({ size = 13 }: { size?: number }) {
 
 export function Footer() {
   return (
-    <footer className="bg-brown text-cream">
+    <footer className="bg-[#1a1a1a] text-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-16 lg:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
           {/* Brand */}

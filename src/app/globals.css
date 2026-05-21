@@ -12,17 +12,17 @@
   --font-mono: var(--font-geist-mono);
 
   /* Brand Colors */
-  --color-cream: #fdf8f3;
-  --color-cream-dark: #f5eef0;
+  --color-cream: #ffffff;
+  --color-cream-dark: #f8f6f4;
   --color-gold: #c9a070;
   --color-gold-light: #e8c99a;
   --color-gold-dark: #a07840;
   --color-brown: #5c1a2e;
   --color-brown-light: #7a2440;
   --color-brown-dark: #3d0f1e;
-  --color-sand: #f0dde4;
-  --color-sand-light: #faf0f3;
-  --color-sand-dark: #d4b0be;
+  --color-sand: #ede8e4;
+  --color-sand-light: #f5f2ef;
+  --color-sand-dark: #d4ccc6;
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -54,32 +54,32 @@
 }
 
 :root {
-  --background: #fdf8f3;
-  --foreground: #5c1a2e;
-  --card: #fdf8f3;
-  --card-foreground: #5c1a2e;
-  --popover: #fdf8f3;
-  --popover-foreground: #5c1a2e;
-  --primary: #c9a070;
-  --primary-foreground: #fdf8f3;
-  --secondary: #f5eef0;
-  --secondary-foreground: #5c1a2e;
-  --muted: #faf0f3;
-  --muted-foreground: #a07840;
-  --accent: #f0dde4;
-  --accent-foreground: #5c1a2e;
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --primary: #5c1a2e;
+  --primary-foreground: #ffffff;
+  --secondary: #f8f6f4;
+  --secondary-foreground: #1a1a1a;
+  --muted: #f5f2ef;
+  --muted-foreground: #888480;
+  --accent: #ede8e4;
+  --accent-foreground: #1a1a1a;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: #f0dde4;
-  --input: #f0dde4;
+  --border: #ede8e4;
+  --input: #ede8e4;
   --ring: #c9a070;
   --radius: 0rem;
-  --sidebar: #f5eef0;
-  --sidebar-foreground: #5c1a2e;
-  --sidebar-primary: #c9a070;
-  --sidebar-primary-foreground: #fdf8f3;
-  --sidebar-accent: #f0dde4;
-  --sidebar-accent-foreground: #5c1a2e;
-  --sidebar-border: #f0dde4;
+  --sidebar: #f8f6f4;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #5c1a2e;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ede8e4;
+  --sidebar-accent-foreground: #1a1a1a;
+  --sidebar-border: #ede8e4;
   --sidebar-ring: #c9a070;
 }
 
@@ -88,7 +88,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-cream text-brown font-sans;
+    @apply bg-white text-[#1a1a1a] font-sans;
   }
   html {
     @apply scroll-smooth;

@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"c:\\\\Users\\\\emre5\\\\madameshelda\\\\madameshelda\")",
+      "Read(//c/Users/emre5/madameshelda/**)",
+      "Bash(npx create-next-app@latest madameshelda --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --yes)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --yes)",
+      "Bash(npx create-next-app@latest shelda-tmp --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --yes)",
+      "PowerShell(cd \"c:\\\\Users\\\\emre5\\\\madameshelda\"; Get-ChildItem shelda-tmp -Force | Where-Object { $_.Name -ne '.git' } | ForEach-Object { Move-Item $_.FullName \"madameshelda\\\\\" -Force }; Remove-Item shelda-tmp -Recurse -Force)",
+      "Bash(npm run *)",
+      "Read(//tmp/**)",
+      "Bash(cat next.config.ts)",
+      "Bash(cat next.config.js)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git commit -m 'chore: add vercel.json for deployment config *)",
+      "WebFetch(domain:mio-gallery.com)",
+      "Bash(git commit -m 'design: ferah beyaz/krem tema — mio-gallery referansı *)"
+    ]
+  }
+}

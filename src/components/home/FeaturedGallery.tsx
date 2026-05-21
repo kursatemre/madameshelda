@@ -50,7 +50,7 @@ export function FeaturedGallery() {
             — Seçkin Eserler
           </p>
           <h2
-            className="font-serif text-brown leading-tight"
+            className="font-serif text-[#1a1a1a] leading-tight"
             style={{
               fontSize: "clamp(2rem, 5vw, 3.5rem)",
               fontStyle: "italic",
@@ -58,7 +58,7 @@ export function FeaturedGallery() {
           >
             Her mekan için
             <br />
-            <span className="text-gold">özgün bir eser</span>
+            <span className="text-brown">özgün bir eser</span>
           </h2>
         </div>
         <Link

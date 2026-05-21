@@ -34,7 +34,7 @@ export function CtaBanner() {
           </p>
 
           <h2
-            className="font-serif text-brown leading-[0.95] mb-8"
+            className="font-serif text-[#1a1a1a] leading-[0.95] mb-8"
             style={{
               fontSize: "clamp(2.5rem, 6vw, 5rem)",
               fontStyle: "italic",
@@ -44,10 +44,10 @@ export function CtaBanner() {
             <br />
             çiçeği birlikte
             <br />
-            <span className="text-gold">tasarlayalım.</span>
+            <span className="text-brown">tasarlayalım.</span>
           </h2>
 
-          <p className="text-brown/60 font-light text-sm lg:text-base leading-relaxed mb-10 max-w-lg">
+          <p className="text-[#888480] font-light text-sm lg:text-base leading-relaxed mb-10 max-w-lg">
             Eviniz, ofisiniz veya özel gününüz için tamamen size özel,
             benzersiz bir çiçek tasarımı. Boyut, renk ve stil tercihlerinizi
             dinliyoruz.
@@ -83,12 +83,12 @@ export function CtaBanner() {
           ].map((stat) => (
             <div key={stat.label}>
               <p
-                className="font-serif text-brown text-3xl lg:text-4xl mb-1.5"
+                className="font-serif text-[#1a1a1a] text-3xl lg:text-4xl mb-1.5"
                 style={{ fontStyle: "italic" }}
               >
                 {stat.value}
               </p>
-              <p className="font-label text-gold text-[0.6rem]">{stat.label}</p>
+              <p className="font-label text-[#888480] text-[0.6rem]">{stat.label}</p>
             </div>
           ))}
         </div>
