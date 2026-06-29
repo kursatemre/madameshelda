@@ -1,20 +1,6 @@
 import { ImageIcon, CalendarDays, ClipboardList, ShoppingBag } from "lucide-react";
 import Link from "next/link";
-
-const stats = [
-  { label: "Toplam Eser", value: "24", icon: ImageIcon, href: "/admin/eserler", change: "+3 bu ay" },
-  { label: "Aktif Workshop", value: "4", icon: CalendarDays, href: "/admin/workshoplar", change: "2 yaklaşıyor" },
-  { label: "Yeni Başvuru", value: "7", icon: ClipboardList, href: "/admin/basvurular", change: "Bekliyor" },
-  { label: "Sipariş Talebi", value: "12", icon: ShoppingBag, href: "/admin/basvurular", change: "Bu hafta" },
-];
-
-const recentApplications = [
-  { name: "Ayşe Kaya", type: "Workshop", subject: "Dev Çiçek Düzenlemeleri", date: "21 Haz 2025", status: "pending" },
-  { name: "Fatma Demir", type: "Sipariş", subject: "Özel Tasarım", date: "20 Haz 2025", status: "confirmed" },
-  { name: "Zeynep Arslan", type: "Workshop", subject: "Başlangıç Çiçek Sanatı", date: "19 Haz 2025", status: "pending" },
-  { name: "Merve Çelik", type: "Sipariş", subject: "Sonbahar Koleksiyonu", date: "18 Haz 2025", status: "confirmed" },
-  { name: "Selin Yıldız", type: "Workshop", subject: "Doğal Boyama", date: "17 Haz 2025", status: "cancelled" },
-];
+import { createServiceClient } from "@/lib/supabase/server";
 
 const statusStyle: Record<string, string> = {
   pending: "bg-amber-50 text-amber-700",
@@ -27,10 +13,64 @@ const statusLabel: Record<string, string> = {
   cancelled: "İptal",
 };
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const supabase = await createServiceClient();
+
+  const [
+    { count: productCount },
+    { count: workshopCount },
+    { count: pendingRegistrations },
+    { count: pendingOrders },
+    { data: recentRegistrations },
+    { data: recentOrders },
+  ] = await Promise.all([
+    supabase.from("products").select("*", { count: "exact", head: true }),
+    supabase.from("workshops").select("*", { count: "exact", head: true }).eq("is_active", true),
+    supabase.from("registrations").select("*", { count: "exact", head: true }).eq("status", "pending"),
+    supabase.from("contact_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
+    supabase.from("registrations").select("id, full_name, status, created_at, workshops(title)").order("created_at", { ascending: false }).limit(3),
+    supabase.from("contact_requests").select("id, full_name, subject, status, created_at").order("created_at", { ascending: false }).limit(3),
+  ]);
+
+  const stats = [
+    { label: "Toplam Eser", value: String(productCount ?? 0), icon: ImageIcon, href: "/admin/eserler", change: "aktif eserler" },
+    { label: "Aktif Workshop", value: String(workshopCount ?? 0), icon: CalendarDays, href: "/admin/workshoplar", change: "aktif" },
+    { label: "Yeni Başvuru", value: String(pendingRegistrations ?? 0), icon: ClipboardList, href: "/admin/basvurular", change: "Bekliyor" },
+    { label: "Sipariş Talebi", value: String(pendingOrders ?? 0), icon: ShoppingBag, href: "/admin/basvurular", change: "Bekliyor" },
+  ];
+
+  type RecentItem = {
+    id: string;
+    name: string;
+    type: string;
+    subject: string;
+    date: string;
+    status: string;
+  };
+
+  const recentActivity: RecentItem[] = [
+    ...(recentRegistrations ?? []).map((r) => ({
+      id: r.id,
+      name: r.full_name,
+      type: "Workshop",
+      subject: (r.workshops as { title?: string } | null)?.title ?? "—",
+      date: new Date(r.created_at).toLocaleDateString("tr-TR"),
+      status: r.status,
+    })),
+    ...(recentOrders ?? []).map((r) => ({
+      id: r.id,
+      name: r.full_name,
+      type: "Sipariş",
+      subject: r.subject,
+      date: new Date(r.created_at).toLocaleDateString("tr-TR"),
+      status: r.status,
+    })),
+  ]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5);
+
   return (
     <div className="p-8 max-w-6xl">
-      {/* Header */}
       <div className="mb-8">
         <p className="font-label text-[#888480] text-[0.6rem] mb-1">Madame Shelda</p>
         <h1 className="font-serif text-[#1a1a1a] text-3xl" style={{ fontStyle: "italic" }}>
@@ -67,23 +107,29 @@ export default function DashboardPage() {
           </Link>
         </div>
         <div className="divide-y divide-sand">
-          {recentApplications.map((app) => (
-            <div key={app.name + app.date} className="flex items-center gap-4 px-6 py-4">
-              <div className="w-8 h-8 bg-cream-dark flex items-center justify-center shrink-0">
-                <span className="font-serif text-brown text-sm" style={{ fontStyle: "italic" }}>
-                  {app.name.charAt(0)}
+          {recentActivity.length === 0 ? (
+            <p className="px-6 py-8 font-label text-[#888480] text-[0.6rem] text-center">
+              Henüz başvuru yok.
+            </p>
+          ) : (
+            recentActivity.map((app) => (
+              <div key={app.id} className="flex items-center gap-4 px-6 py-4">
+                <div className="w-8 h-8 bg-[#f5f1ef] flex items-center justify-center shrink-0">
+                  <span className="font-serif text-brown text-sm" style={{ fontStyle: "italic" }}>
+                    {app.name.charAt(0)}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-label text-[#1a1a1a] text-[0.65rem]">{app.name}</p>
+                  <p className="font-label text-[#888480] text-[0.55rem] truncate">{app.subject}</p>
+                </div>
+                <span className="font-label text-[#888480] text-[0.55rem] hidden sm:block shrink-0">{app.date}</span>
+                <span className={`font-label text-[0.55rem] px-2.5 py-1 shrink-0 ${statusStyle[app.status]}`}>
+                  {statusLabel[app.status]}
                 </span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-label text-[#1a1a1a] text-[0.65rem]">{app.name}</p>
-                <p className="font-label text-[#888480] text-[0.55rem] truncate">{app.subject}</p>
-              </div>
-              <span className="font-label text-[#888480] text-[0.55rem] hidden sm:block shrink-0">{app.date}</span>
-              <span className={`font-label text-[0.55rem] px-2.5 py-1 shrink-0 ${statusStyle[app.status]}`}>
-                {statusLabel[app.status]}
-              </span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>

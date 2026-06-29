@@ -26,10 +26,27 @@ export default function IletisimPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoading(false);
-    toast.success("Mesajınız iletildi. En kısa sürede dönüş yapacağız.");
-    setForm({ full_name: "", email: "", phone: "", message: "" });
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name: form.full_name,
+          email: form.email,
+          phone: form.phone || null,
+          subject: "İletişim Formu",
+          message: form.message,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Hata oluştu.");
+      toast.success("Mesajınız iletildi. En kısa sürede dönüş yapacağız.");
+      setForm({ full_name: "", email: "", phone: "", message: "" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Bir hata oluştu, lütfen tekrar deneyin.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

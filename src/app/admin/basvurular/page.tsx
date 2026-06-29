@@ -1,23 +1,32 @@
 "use client";
 
-import { useState } from "react";
-import { CheckCircle, XCircle, Mail, Phone } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { CheckCircle, XCircle, Mail, Phone, RefreshCw } from "lucide-react";
 
 type Status = "pending" | "confirmed" | "cancelled";
 
-const mockData = {
-  workshop: [
-    { id: "1", full_name: "Ayşe Kaya", email: "ayse@email.com", phone: "0532 111 22 33", workshop: "Dev Çiçek Düzenlemeleri", date: "21 Haz 2025", status: "pending" as Status, notes: "" },
-    { id: "2", full_name: "Zeynep Arslan", email: "zeynep@email.com", phone: "0541 222 33 44", workshop: "Başlangıç Çiçek Sanatı", date: "14 Haz 2025", status: "pending" as Status, notes: "Çocuğumu getirebilir miyim?" },
-    { id: "3", full_name: "Selin Yıldız", email: "selin@email.com", phone: "0553 333 44 55", workshop: "Doğal Boyama", date: "5 Tem 2025", status: "confirmed" as Status, notes: "" },
-    { id: "4", full_name: "Hande Öztürk", email: "hande@email.com", phone: "0555 444 55 66", workshop: "Başlangıç Çiçek Sanatı", date: "14 Haz 2025", status: "cancelled" as Status, notes: "" },
-  ],
-  orders: [
-    { id: "1", full_name: "Fatma Demir", email: "fatma@email.com", phone: "0542 555 66 77", subject: "Özel Tasarım", message: "Oturma odam için büyük bir çalışma istiyorum, krem ve bordo tonlarında.", date: "20 Haz 2025", status: "pending" as Status },
-    { id: "2", full_name: "Merve Çelik", email: "merve@email.com", phone: "0544 666 77 88", subject: "Sonbahar Koleksiyonu", message: "Bu eserin bir benzerini istiyorum.", date: "18 Haz 2025", status: "confirmed" as Status },
-    { id: "3", full_name: "Neslihan Ak", email: "neslihan@email.com", phone: "0546 777 88 99", subject: "Ofis Tasarımı", message: "Resepsiyon alanı için minimalist bir düzenleme.", date: "15 Haz 2025", status: "pending" as Status },
-  ],
-};
+interface Registration {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  notes: string | null;
+  status: Status;
+  created_at: string;
+  workshops: { id: string; title: string; date: string } | null;
+}
+
+interface ContactRequest {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  subject: string;
+  message: string;
+  product_slug: string | null;
+  status: Status;
+  created_at: string;
+}
 
 const statusStyle: Record<Status, string> = {
   pending: "bg-amber-50 text-amber-700 border-amber-200",
@@ -30,26 +39,52 @@ const statusLabel: Record<Status, string> = {
 
 export default function AdminBasvurularPage() {
   const [tab, setTab] = useState<"workshop" | "orders">("workshop");
-  const [workshopData, setWorkshopData] = useState(mockData.workshop);
-  const [orderData, setOrderData] = useState(mockData.orders);
+  const [workshopData, setWorkshopData] = useState<Registration[]>([]);
+  const [orderData, setOrderData] = useState<ContactRequest[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const updateStatus = (id: string, status: Status) => {
-    if (tab === "workshop") {
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [regRes, orderRes] = await Promise.all([
+        fetch("/api/admin/registrations"),
+        fetch("/api/admin/orders"),
+      ]);
+      if (regRes.ok) setWorkshopData(await regRes.json());
+      if (orderRes.ok) setOrderData(await orderRes.json());
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const updateStatus = async (id: string, status: Status, table: "registrations" | "contact_requests") => {
+    const res = await fetch("/api/admin/update-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table, id, status }),
+    });
+    if (!res.ok) return;
+    if (table === "registrations") {
       setWorkshopData((p) => p.map((r) => r.id === id ? { ...r, status } : r));
     } else {
       setOrderData((p) => p.map((r) => r.id === id ? { ...r, status } : r));
     }
   };
 
-  const currentData = tab === "workshop" ? workshopData : orderData;
-
   return (
     <div className="p-8 max-w-5xl">
-      <div className="mb-8">
-        <p className="font-label text-[#888480] text-[0.6rem] mb-1">Yönetim</p>
-        <h1 className="font-serif text-[#1a1a1a] text-3xl" style={{ fontStyle: "italic" }}>
-          Başvurular
-        </h1>
+      <div className="flex items-start justify-between mb-8">
+        <div>
+          <p className="font-label text-[#888480] text-[0.6rem] mb-1">Yönetim</p>
+          <h1 className="font-serif text-[#1a1a1a] text-3xl" style={{ fontStyle: "italic" }}>
+            Başvurular
+          </h1>
+        </div>
+        <button onClick={fetchData} className="p-2 text-[#888480] hover:text-brown transition-colors" title="Yenile">
+          <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+        </button>
       </div>
 
       {/* Tabs */}
@@ -64,72 +99,117 @@ export default function AdminBasvurularPage() {
                 : "border-transparent text-[#888480] hover:text-[#1a1a1a]"
             }`}
           >
-            {t === "workshop" ? `Workshop Başvuruları (${workshopData.filter(r => r.status === "pending").length})` : `Sipariş Talepleri (${orderData.filter(r => r.status === "pending").length})`}
+            {t === "workshop"
+              ? `Workshop Başvuruları (${workshopData.filter(r => r.status === "pending").length})`
+              : `Sipariş Talepleri (${orderData.filter(r => r.status === "pending").length})`}
           </button>
         ))}
       </div>
 
       {/* List */}
-      <div className="space-y-3">
-        {currentData.map((item) => (
-          <div key={item.id} className="bg-white border border-sand p-5">
-            <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-2">
-                  <h3 className="font-label text-[#1a1a1a] text-[0.7rem]">{item.full_name}</h3>
-                  <span className={`font-label text-[0.55rem] px-2.5 py-1 border ${statusStyle[item.status]}`}>
-                    {statusLabel[item.status]}
-                  </span>
+      {loading ? (
+        <div className="py-16 text-center font-label text-[#888480] text-[0.6rem]">Yükleniyor...</div>
+      ) : (
+        <div className="space-y-3">
+          {tab === "workshop" ? (
+            workshopData.length === 0 ? (
+              <p className="py-16 text-center font-label text-[#888480] text-[0.6rem]">Başvuru bulunamadı.</p>
+            ) : workshopData.map((item) => (
+              <div key={item.id} className="bg-white border border-sand p-5">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="font-label text-[#1a1a1a] text-[0.7rem]">{item.full_name}</h3>
+                      <span className={`font-label text-[0.55rem] px-2.5 py-1 border ${statusStyle[item.status]}`}>
+                        {statusLabel[item.status]}
+                      </span>
+                    </div>
+                    <p className="font-label text-brown text-[0.65rem] mb-2">
+                      {item.workshops?.title ?? "—"} · {item.workshops?.date ? new Date(item.workshops.date).toLocaleDateString("tr-TR") : "—"}
+                    </p>
+                    <div className="flex flex-wrap gap-4 mb-3">
+                      <a href={`mailto:${item.email}`} className="flex items-center gap-1.5 font-label text-[#888480] text-[0.6rem] hover:text-brown transition-colors">
+                        <Mail size={11} /> {item.email}
+                      </a>
+                      <a href={`tel:${item.phone}`} className="flex items-center gap-1.5 font-label text-[#888480] text-[0.6rem] hover:text-brown transition-colors">
+                        <Phone size={11} /> {item.phone}
+                      </a>
+                    </div>
+                    {item.notes && (
+                      <p className="text-[#888480] text-xs font-light italic border-l-2 border-sand pl-3">
+                        &ldquo;{item.notes}&rdquo;
+                      </p>
+                    )}
+                  </div>
+                  {item.status === "pending" && (
+                    <div className="flex gap-2 shrink-0">
+                      <button
+                        onClick={() => updateStatus(item.id, "confirmed", "registrations")}
+                        className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 font-label text-[0.6rem] px-3 py-2 hover:bg-green-100 transition-colors"
+                      >
+                        <CheckCircle size={12} /> Onayla
+                      </button>
+                      <button
+                        onClick={() => updateStatus(item.id, "cancelled", "registrations")}
+                        className="inline-flex items-center gap-1.5 bg-red-50 text-red-600 font-label text-[0.6rem] px-3 py-2 hover:bg-red-100 transition-colors"
+                      >
+                        <XCircle size={12} /> İptal
+                      </button>
+                    </div>
+                  )}
                 </div>
-
-                <p className="font-label text-brown text-[0.65rem] mb-2">
-                  {tab === "workshop"
-                    ? (item as typeof workshopData[0]).workshop + " · " + (item as typeof workshopData[0]).date
-                    : (item as typeof orderData[0]).subject}
-                </p>
-
-                <div className="flex flex-wrap gap-4 mb-3">
-                  <a href={`mailto:${item.email}`} className="flex items-center gap-1.5 font-label text-[#888480] text-[0.6rem] hover:text-brown transition-colors">
-                    <Mail size={11} /> {item.email}
-                  </a>
-                  <a href={`tel:${item.phone}`} className="flex items-center gap-1.5 font-label text-[#888480] text-[0.6rem] hover:text-brown transition-colors">
-                    <Phone size={11} /> {item.phone}
-                  </a>
-                </div>
-
-                {"message" in item && item.message && (
-                  <p className="text-[#888480] text-xs font-light italic border-l-2 border-sand pl-3">
-                    &ldquo;{item.message}&rdquo;
-                  </p>
-                )}
-                {"notes" in item && item.notes && (
-                  <p className="text-[#888480] text-xs font-light italic border-l-2 border-sand pl-3">
-                    &ldquo;{item.notes}&rdquo;
-                  </p>
-                )}
               </div>
-
-              {/* Actions */}
-              {item.status === "pending" && (
-                <div className="flex gap-2 shrink-0">
-                  <button
-                    onClick={() => updateStatus(item.id, "confirmed")}
-                    className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 font-label text-[0.6rem] px-3 py-2 hover:bg-green-100 transition-colors"
-                  >
-                    <CheckCircle size={12} /> Onayla
-                  </button>
-                  <button
-                    onClick={() => updateStatus(item.id, "cancelled")}
-                    className="inline-flex items-center gap-1.5 bg-red-50 text-red-600 font-label text-[0.6rem] px-3 py-2 hover:bg-red-100 transition-colors"
-                  >
-                    <XCircle size={12} /> İptal
-                  </button>
+            ))
+          ) : (
+            orderData.length === 0 ? (
+              <p className="py-16 text-center font-label text-[#888480] text-[0.6rem]">Sipariş talebi bulunamadı.</p>
+            ) : orderData.map((item) => (
+              <div key={item.id} className="bg-white border border-sand p-5">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="font-label text-[#1a1a1a] text-[0.7rem]">{item.full_name}</h3>
+                      <span className={`font-label text-[0.55rem] px-2.5 py-1 border ${statusStyle[item.status]}`}>
+                        {statusLabel[item.status]}
+                      </span>
+                    </div>
+                    <p className="font-label text-brown text-[0.65rem] mb-2">{item.subject}</p>
+                    <div className="flex flex-wrap gap-4 mb-3">
+                      <a href={`mailto:${item.email}`} className="flex items-center gap-1.5 font-label text-[#888480] text-[0.6rem] hover:text-brown transition-colors">
+                        <Mail size={11} /> {item.email}
+                      </a>
+                      {item.phone && (
+                        <a href={`tel:${item.phone}`} className="flex items-center gap-1.5 font-label text-[#888480] text-[0.6rem] hover:text-brown transition-colors">
+                          <Phone size={11} /> {item.phone}
+                        </a>
+                      )}
+                    </div>
+                    <p className="text-[#888480] text-xs font-light italic border-l-2 border-sand pl-3">
+                      &ldquo;{item.message}&rdquo;
+                    </p>
+                  </div>
+                  {item.status === "pending" && (
+                    <div className="flex gap-2 shrink-0">
+                      <button
+                        onClick={() => updateStatus(item.id, "confirmed", "contact_requests")}
+                        className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 font-label text-[0.6rem] px-3 py-2 hover:bg-green-100 transition-colors"
+                      >
+                        <CheckCircle size={12} /> Onayla
+                      </button>
+                      <button
+                        onClick={() => updateStatus(item.id, "cancelled", "contact_requests")}
+                        className="inline-flex items-center gap-1.5 bg-red-50 text-red-600 font-label text-[0.6rem] px-3 py-2 hover:bg-red-100 transition-colors"
+                      >
+                        <XCircle size={12} /> İptal
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }

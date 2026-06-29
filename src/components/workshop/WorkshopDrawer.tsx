@@ -22,6 +22,7 @@ export function WorkshopDrawer({
   open,
   onClose,
   workshopTitle,
+  workshopId,
 }: WorkshopDrawerProps) {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -34,11 +35,28 @@ export function WorkshopDrawer({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoading(false);
-    toast.success("Başvurunuz alındı! Onay bilgisi e-postanıza gönderilecek.");
-    onClose();
-    setForm({ full_name: "", email: "", phone: "", notes: "" });
+    try {
+      const res = await fetch("/api/workshop-register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          workshop_id: workshopId,
+          full_name: form.full_name,
+          email: form.email,
+          phone: form.phone,
+          notes: form.notes,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Hata oluştu.");
+      toast.success("Başvurunuz alındı! Onay bilgisi e-postanıza gönderilecek.");
+      onClose();
+      setForm({ full_name: "", email: "", phone: "", notes: "" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Bir hata oluştu, lütfen tekrar deneyin.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

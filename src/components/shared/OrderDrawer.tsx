@@ -15,9 +15,10 @@ interface OrderDrawerProps {
   open: boolean;
   onClose: () => void;
   productTitle?: string;
+  productSlug?: string;
 }
 
-export function OrderDrawer({ open, onClose, productTitle }: OrderDrawerProps) {
+export function OrderDrawer({ open, onClose, productTitle, productSlug }: OrderDrawerProps) {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     full_name: "",
@@ -29,11 +30,29 @@ export function OrderDrawer({ open, onClose, productTitle }: OrderDrawerProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoading(false);
-    toast.success("Talebiniz alındı. En kısa sürede dönüş yapacağız.");
-    onClose();
-    setForm({ full_name: "", email: "", phone: "", message: "" });
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name: form.full_name,
+          email: form.email,
+          phone: form.phone,
+          subject: productTitle || "Özel Sipariş Talebi",
+          message: form.message,
+          product_slug: productSlug || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Hata oluştu.");
+      toast.success("Talebiniz alındı. En kısa sürede dönüş yapacağız.");
+      onClose();
+      setForm({ full_name: "", email: "", phone: "", message: "" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Bir hata oluştu, lütfen tekrar deneyin.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

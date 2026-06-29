@@ -1,36 +1,27 @@
 import Link from "next/link";
-import { ArrowRight, Calendar, Clock, Users } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const workshops = [
   {
-    id: "1",
     slug: "baslangic-cicek-sanati",
     title: "Başlangıç Çiçek Sanatı",
-    date: "14 Haziran 2025",
-    duration: "3 saat",
-    capacity: 8,
+    description: "İlk kez mı? Hiçbir deneyim gerekmez.",
     level: "Başlangıç",
-    price: "₺1.200",
+    bg: "linear-gradient(135deg, #fdf8f3 0%, #f0dde4 100%)",
   },
   {
-    id: "2",
     slug: "dev-cicek-duzenlemeleri",
-    title: "Dev Çiçek Düzenlemeleri",
-    date: "21 Haziran 2025",
-    duration: "4 saat",
-    capacity: 6,
+    title: "Dev Düzenlemeler",
+    description: "Mekânı dönüştüren büyük ölçekli tasarımlar.",
     level: "Orta",
-    price: "₺1.800",
+    bg: "linear-gradient(135deg, #faf0f3 0%, #e8c99a 100%)",
   },
   {
-    id: "3",
     slug: "dogal-boyama-teknikleri",
-    title: "Doğal Boyama Teknikleri",
-    date: "5 Temmuz 2025",
-    duration: "5 saat",
-    capacity: 6,
+    title: "Doğal Boyama",
+    description: "Bitkisel pigmentlerle rengin diliyle konuşun.",
     level: "İleri",
-    price: "₺2.400",
+    bg: "linear-gradient(135deg, #f5eef0 0%, #c9a070 100%)",
   },
 ];
 
@@ -41,19 +32,14 @@ export function WorkshopTeaser() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 lg:mb-16 gap-6">
           <div>
-            <p className="font-label text-gold text-[0.65rem] mb-4">
-              — Workshoplar
-            </p>
+            <p className="font-label text-gold text-[0.65rem] mb-4">— Workshoplar</p>
             <h2
               className="font-serif text-[#1a1a1a] leading-tight"
-              style={{
-                fontSize: "clamp(2rem, 5vw, 3.5rem)",
-                fontStyle: "italic",
-              }}
+              style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", fontStyle: "italic" }}
             >
-              Sanatı birlikte
+              Atölyede bir gün
               <br />
-              <span className="text-brown">keşfedin</span>
+              <span className="text-brown">birlikte geçirelim</span>
             </h2>
           </div>
           <Link
@@ -61,78 +47,64 @@ export function WorkshopTeaser() {
             className="inline-flex items-center gap-3 font-label text-[#888480] hover:text-brown transition-colors duration-300 group self-start lg:self-auto"
           >
             Tüm Workshoplar
-            <ArrowRight
-              size={14}
-              className="group-hover:translate-x-1 transition-transform duration-300"
-            />
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
           </Link>
         </div>
 
-        {/* Workshop Cards */}
+        {/* Kartlar */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {workshops.map((ws, i) => (
             <Link
-              key={ws.id}
+              key={ws.slug}
               href={`/workshop/${ws.slug}`}
-              className="group border border-sand hover:border-brown/30 bg-white p-6 lg:p-8 transition-all duration-300 relative overflow-hidden"
+              className="group flex flex-col overflow-hidden border border-sand hover:border-gold/40 bg-white transition-all duration-300"
             >
-              {/* Number */}
-              <span className="font-label text-gold/20 text-[0.6rem] mb-6 block">
-                0{i + 1}
-              </span>
-
-              {/* Title */}
-              <h3
-                className="font-serif text-[#1a1a1a] text-xl lg:text-2xl mb-6 group-hover:text-brown transition-colors duration-300"
-                style={{ fontStyle: "italic" }}
+              {/* Görsel */}
+              <div
+                className="h-40 relative overflow-hidden"
+                style={{ background: ws.bg }}
               >
-                {ws.title}
-              </h3>
-
-              {/* Meta */}
-              <div className="space-y-2.5 mb-8">
-                <div className="flex items-center gap-2.5 text-[#888480]">
-                  <Calendar size={12} />
-                  <span className="font-label text-[0.6rem]">{ws.date}</span>
-                </div>
-                <div className="flex items-center gap-2.5 text-[#888480]">
-                  <Clock size={12} />
-                  <span className="font-label text-[0.6rem]">{ws.duration}</span>
-                </div>
-                <div className="flex items-center gap-2.5 text-[#888480]">
-                  <Users size={12} />
-                  <span className="font-label text-[0.6rem]">
-                    Maks. {ws.capacity} kişi
-                  </span>
-                </div>
+                <svg
+                  className="absolute inset-0 w-full h-full opacity-20"
+                  viewBox="0 0 400 200"
+                  fill="none"
+                  preserveAspectRatio="xMidYMid slice"
+                >
+                  {[0, 60, 120, 180, 240, 300].map((angle) => (
+                    <ellipse
+                      key={angle}
+                      cx="200"
+                      cy="100"
+                      rx="30"
+                      ry="90"
+                      fill="#5c1a2e"
+                      transform={`rotate(${angle} 200 100)`}
+                    />
+                  ))}
+                  <circle cx="200" cy="100" r="25" fill="#5c1a2e" />
+                </svg>
+                <span className="absolute bottom-3 right-3 font-label text-cream/30 text-[0.55rem]">
+                  0{i + 1}
+                </span>
               </div>
 
-              {/* Footer */}
-              <div className="flex items-center justify-between pt-4 border-t border-sand">
-                <div>
-                  <span className="font-label text-gold/60 text-[0.55rem] block mb-0.5">
-                    Seviye
-                  </span>
-                  <span className="font-label text-[#888480] text-[0.6rem]">
-                    {ws.level}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="font-label text-gold/60 text-[0.55rem] block mb-0.5">
-                    Katılım
-                  </span>
-                  <span
-                    className="font-serif text-[#1a1a1a] text-lg"
-                    style={{ fontStyle: "italic" }}
-                  >
-                    {ws.price}
+              {/* İçerik */}
+              <div className="p-6 flex flex-col flex-1">
+                <span className="font-label text-gold/60 text-[0.55rem] mb-2">{ws.level}</span>
+                <h3
+                  className="font-serif text-[#1a1a1a] text-xl mb-2 group-hover:text-brown transition-colors duration-300"
+                  style={{ fontStyle: "italic" }}
+                >
+                  {ws.title}
+                </h3>
+                <p className="text-[#888480] font-light text-sm leading-relaxed flex-1">
+                  {ws.description}
+                </p>
+                <div className="flex items-center justify-end mt-5 pt-4 border-t border-sand">
+                  <span className="font-label text-gold text-[0.6rem] flex items-center gap-1.5 group-hover:gap-2.5 transition-all duration-300">
+                    İncele <ArrowRight size={11} />
                   </span>
                 </div>
-              </div>
-
-              {/* Hover arrow */}
-              <div className="absolute bottom-6 right-6 lg:bottom-8 lg:right-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <ArrowRight size={16} className="text-gold" />
               </div>
             </Link>
           ))}
