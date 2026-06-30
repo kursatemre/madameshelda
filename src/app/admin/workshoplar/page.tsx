@@ -1,117 +1,167 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Users } from "lucide-react";
+import { Plus, Trash2, Image as ImageIcon, X } from "lucide-react";
 
-const mockWorkshops = [
-  { id: "1", slug: "baslangic-cicek-sanati", title: "Başlangıç Çiçek Sanatı", date: "14 Haz 2025", duration: 3, capacity: 8, filled: 5, price: 1200, level: "Başlangıç", active: true },
-  { id: "2", slug: "dev-cicek-duzenlemeleri", title: "Dev Çiçek Düzenlemeleri", date: "21 Haz 2025", duration: 4, capacity: 6, filled: 6, price: 1800, level: "Orta", active: true },
-  { id: "3", slug: "dogal-boyama-teknikleri", title: "Doğal Boyama Teknikleri", date: "5 Tem 2025", duration: 5, capacity: 6, filled: 2, price: 2400, level: "İleri", active: true },
-  { id: "4", slug: "yaz-cicekleri", title: "Yaz Çiçekleri Koleksiyonu", date: "19 Tem 2025", duration: 3, capacity: 10, filled: 3, price: 1200, level: "Başlangıç", active: false },
+type WorkshopImage = {
+  id: string;
+  url: string;
+  caption: string;
+};
+
+const defaultImages: WorkshopImage[] = [
+  { id: "1", url: "https://images.unsplash.com/photo-1487530811015-780adza5a8c9?w=600", caption: "Atölye ortamı" },
+  { id: "2", url: "https://images.unsplash.com/photo-1490750967868-88df5691166a?w=600", caption: "Workshop anı" },
 ];
 
 export default function AdminWorkshoplarPage() {
-  const [workshops, setWorkshops] = useState(mockWorkshops);
+  const [images, setImages] = useState<WorkshopImage[]>(defaultImages);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [newUrl, setNewUrl] = useState("");
+  const [newCaption, setNewCaption] = useState("");
 
-  const toggleActive = (id: string) => {
-    setWorkshops((p) => p.map((w) => w.id === id ? { ...w, active: !w.active } : w));
+  const addImage = () => {
+    if (!newUrl.trim()) return;
+    setImages((p) => [
+      ...p,
+      { id: Date.now().toString(), url: newUrl.trim(), caption: newCaption.trim() },
+    ]);
+    setNewUrl("");
+    setNewCaption("");
+    setModalOpen(false);
   };
 
-  const deleteWorkshop = (id: string) => {
-    if (confirm("Bu workshopu silmek istediğinize emin misiniz?")) {
-      setWorkshops((p) => p.filter((w) => w.id !== id));
+  const deleteImage = (id: string) => {
+    if (confirm("Bu görseli silmek istediğinize emin misiniz?")) {
+      setImages((p) => p.filter((img) => img.id !== id));
     }
   };
 
   return (
-    <div className="p-8 max-w-6xl">
+    <div className="p-8 max-w-5xl">
       <div className="flex items-center justify-between mb-8">
         <div>
           <p className="font-label text-[#888480] text-[0.6rem] mb-1">Yönetim</p>
           <h1 className="font-serif text-[#1a1a1a] text-3xl" style={{ fontStyle: "italic" }}>
-            Workshoplar
+            Workshop Görselleri
           </h1>
         </div>
-        <button className="inline-flex items-center gap-2 bg-brown text-white font-label px-5 py-3 hover:bg-brown-light transition-colors duration-200">
+        <button
+          onClick={() => setModalOpen(true)}
+          className="inline-flex items-center gap-2 bg-brown text-white font-label px-5 py-3 hover:bg-brown-light transition-colors duration-200"
+        >
           <Plus size={14} />
-          Yeni Workshop
+          Görsel Ekle
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
-        {workshops.map((ws) => {
-          const fillPct = Math.round((ws.filled / ws.capacity) * 100);
-          const isFull = ws.filled >= ws.capacity;
+      <p className="font-label text-[#888480] text-[0.6rem] mb-6">
+        Bu görseller workshop sayfalarında atölye atmosferini yansıtır.
+      </p>
 
-          return (
-            <div key={ws.id} className="bg-white border border-sand p-5 flex flex-col sm:flex-row sm:items-center gap-4">
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-1.5">
-                  <h3 className="font-label text-[#1a1a1a] text-[0.7rem]">{ws.title}</h3>
-                  <span className="font-label text-[0.55rem] border border-sand px-2 py-0.5 text-[#888480]">
-                    {ws.level}
-                  </span>
-                  {!ws.active && (
-                    <span className="font-label text-[0.55rem] bg-red-50 text-red-500 px-2 py-0.5">Pasif</span>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-4 text-[#888480]">
-                  <span className="font-label text-[0.6rem]">{ws.date}</span>
-                  <span className="font-label text-[0.6rem]">{ws.duration} saat</span>
-                  <span className="font-label text-[0.6rem]">
-                    ₺{ws.price.toLocaleString("tr-TR")}
-                  </span>
-                </div>
+      {images.length === 0 ? (
+        <div className="border border-dashed border-sand py-20 flex flex-col items-center gap-4 text-center">
+          <ImageIcon size={32} className="text-sand-dark" />
+          <p className="font-label text-[#888480] text-[0.65rem]">Henüz görsel eklenmedi.</p>
+          <button
+            onClick={() => setModalOpen(true)}
+            className="font-label text-gold text-[0.6rem] hover:text-brown transition-colors"
+          >
+            İlk görseli ekle →
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {images.map((img) => (
+            <div key={img.id} className="group relative">
+              <div className="aspect-square bg-sand overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={img.url}
+                  alt={img.caption}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {img.caption && (
+                <p className="font-label text-[#888480] text-[0.55rem] mt-1.5 truncate">
+                  {img.caption}
+                </p>
+              )}
+              <button
+                onClick={() => deleteImage(img.id)}
+                className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Trash2 size={11} />
+              </button>
+            </div>
+          ))}
+
+          <button
+            onClick={() => setModalOpen(true)}
+            className="aspect-square border border-dashed border-sand flex flex-col items-center justify-center gap-2 hover:border-brown/40 transition-colors"
+          >
+            <Plus size={20} className="text-[#888480]" />
+            <span className="font-label text-[#888480] text-[0.55rem]">Ekle</span>
+          </button>
+        </div>
+      )}
+
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-label text-[#1a1a1a] text-[0.7rem]">Görsel Ekle</h2>
+              <button onClick={() => setModalOpen(false)} className="text-[#888480] hover:text-brown transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-5">
+              <div>
+                <label className="font-label text-[#888480] text-[0.55rem] block mb-2">
+                  Görsel URL <span className="text-gold">*</span>
+                </label>
+                <input
+                  type="url"
+                  value={newUrl}
+                  onChange={(e) => setNewUrl(e.target.value)}
+                  className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm"
+                  placeholder="https://..."
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="font-label text-[#888480] text-[0.55rem] block mb-2">
+                  Açıklama (opsiyonel)
+                </label>
+                <input
+                  type="text"
+                  value={newCaption}
+                  onChange={(e) => setNewCaption(e.target.value)}
+                  className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm"
+                  placeholder="Atölye ortamı..."
+                />
               </div>
 
-              {/* Capacity */}
-              <div className="w-36 shrink-0">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-label text-[#888480] text-[0.55rem] flex items-center gap-1">
-                    <Users size={11} /> {ws.filled}/{ws.capacity}
-                  </span>
-                  <span className={`font-label text-[0.55rem] ${isFull ? "text-red-500" : "text-green-600"}`}>
-                    {isFull ? "Doldu" : `${ws.capacity - ws.filled} yer`}
-                  </span>
-                </div>
-                <div className="h-1 bg-sand overflow-hidden">
-                  <div
-                    className={`h-full transition-all ${isFull ? "bg-red-400" : "bg-gold"}`}
-                    style={{ width: `${fillPct}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex gap-3 pt-2">
                 <button
-                  onClick={() => toggleActive(ws.id)}
-                  className={`font-label text-[0.55rem] px-3 py-1.5 transition-colors ${
-                    ws.active ? "bg-green-50 text-green-700" : "bg-sand text-[#888480]"
-                  }`}
+                  onClick={() => setModalOpen(false)}
+                  className="flex-1 border border-sand font-label text-[#888480] text-[0.6rem] py-3 hover:border-brown/40 transition-colors"
                 >
-                  {ws.active ? "Aktif" : "Pasif"}
-                </button>
-                <button className="p-2 text-[#888480] hover:text-brown transition-colors" title="Düzenle">
-                  <Pencil size={14} />
+                  İptal
                 </button>
                 <button
-                  onClick={() => deleteWorkshop(ws.id)}
-                  className="p-2 text-[#888480] hover:text-red-500 transition-colors"
-                  title="Sil"
+                  onClick={addImage}
+                  disabled={!newUrl.trim()}
+                  className="flex-1 bg-brown text-cream font-label text-[0.6rem] py-3 hover:bg-brown-light transition-colors disabled:opacity-50"
                 >
-                  <Trash2 size={14} />
+                  Ekle
                 </button>
               </div>
             </div>
-          );
-        })}
-      </div>
-
-      <p className="font-label text-[#888480] text-[0.55rem] mt-4">
-        Toplam {workshops.length} workshop · Supabase bağlantısı eklendiğinde veriler buraya yüklenecek.
-      </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

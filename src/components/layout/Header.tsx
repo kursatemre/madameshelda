@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { ShoppingBag } from "lucide-react";
 import { MobileNav } from "./MobileNav";
+import { useCart } from "@/contexts/CartContext";
 
 const navLinks = [
   { href: "/galeri", label: "Galeri" },
@@ -14,6 +16,7 @@ const navLinks = [
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
+  const { count, setIsOpen } = useCart();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
@@ -80,8 +83,24 @@ export function Header() {
             </nav>
           </div>
 
-          {/* CTA + Mobile hamburger */}
-          <div className="flex items-center gap-4">
+          {/* Cart + CTA + Mobile hamburger */}
+          <div className="flex items-center gap-3">
+            {/* Cart button */}
+            <button
+              onClick={() => setIsOpen(true)}
+              className={`relative p-2 transition-colors duration-300 ${
+                transparent ? "text-cream/80 hover:text-cream" : "text-brown/70 hover:text-brown"
+              }`}
+              aria-label="Sepet"
+            >
+              <ShoppingBag size={18} />
+              {count > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-brown text-cream text-[0.5rem] font-label flex items-center justify-center rounded-full">
+                  {count}
+                </span>
+              )}
+            </button>
+
             <Link
               href="/iletisim"
               className={`hidden lg:inline-flex items-center gap-2 font-label px-6 py-3 transition-all duration-300 ${

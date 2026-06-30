@@ -2,142 +2,254 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { OrderDrawer } from "@/components/shared/OrderDrawer";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, ShoppingBag, Zap, ShieldCheck, Truck, RefreshCw, CheckCircle } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
+import { getProduct, categoryLabels } from "@/data/products";
+import { toast } from "sonner";
 
-const mockProduct = {
-  slug: "sonbahar-koleksiyonu",
-  title: "Sonbahar Koleksiyonu",
-  category: "Özel Sipariş",
-  price: "₺4.800",
-  description:
-    "Sonbaharın zengin renk paleti ilhamıyla tasarlanan bu eser; akçaağaç yapraklarının kızıl-altın tonları, kuru lavanta dalları ve büyük solmuş pembe peonies'lerden oluşuyor. Salon veya giriş holü için ideal bir büyük format çalışma.",
-  details: [
-    "Boyut: 80×120 cm (yaklaşık)",
-    "Malzeme: Kurutulmuş çiçekler, doğal lifler",
-    "Çerçeve: Ahşap (meşe)",
-    "Teslimat: 2–3 hafta",
-  ],
-  bg: "linear-gradient(135deg, #f5eef0 0%, #d4b0be 50%, #5c1a2e 100%)",
-};
+const trustItems = [
+  { icon: ShieldCheck, text: "Güvenli ödeme" },
+  { icon: Truck, text: "Ücretsiz kargo" },
+  { icon: RefreshCw, text: "10 gün iade garantisi" },
+  { icon: CheckCircle, text: "El yapımı, özgün eser" },
+];
 
-export default function EserDetayPage() {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+export default function EserDetayPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const { add, items } = useCart();
+  const router = useRouter();
+  const product = getProduct(params.slug);
+  const [added, setAdded] = useState(false);
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="font-serif text-brown/40 text-2xl mb-4" style={{ fontStyle: "italic" }}>
+            Eser bulunamadı.
+          </p>
+          <Link href="/galeri" className="font-label text-gold text-[0.6rem] hover:text-brown transition-colors">
+            ← Galerime Dön
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const inCart = items.some((i) => i.id === product.id);
+
+  const handleAddToCart = () => {
+    if (inCart) {
+      toast("Zaten sepette", { description: product.title });
+      return;
+    }
+    add({ id: product.id, slug: product.slug, title: product.title, price: product.price, bg: product.bg });
+    setAdded(true);
+    toast.success("Sepete eklendi", { description: product.title });
+  };
+
+  const handleBuyNow = () => {
+    if (!inCart) {
+      add({ id: product.id, slug: product.slug, title: product.title, price: product.price, bg: product.bg });
+    }
+    router.push("/odeme");
+  };
 
   return (
     <>
       <div className="pt-16 lg:pt-20 min-h-screen">
-        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[90vh]">
-          {/* Image */}
-          <div
-            className="relative lg:sticky lg:top-20 lg:self-start min-h-[55vw] sm:min-h-[45vw] lg:min-h-screen"
-            style={{ background: mockProduct.bg }}
-          >
-            <svg
-              className="absolute inset-0 w-full h-full opacity-30"
-              viewBox="0 0 600 700"
-              fill="none"
-              preserveAspectRatio="xMidYMid slice"
-            >
-              {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
-                <ellipse
-                  key={angle}
-                  cx="300"
-                  cy="180"
-                  rx="70"
-                  ry="210"
-                  fill="#5c1a2e"
-                  transform={`rotate(${angle} 300 350)`}
-                />
-              ))}
-              <circle cx="300" cy="350" r="55" fill="#5c1a2e" opacity="0.8" />
-            </svg>
-
-            {/* Category tag */}
-            <div className="absolute top-6 left-6">
-              <span className="font-label text-[0.55rem] bg-cream/90 text-brown px-3 py-1.5">
-                {mockProduct.category}
-              </span>
-            </div>
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-8">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 mb-8">
+            <Link href="/galeri" className="flex items-center gap-1.5 font-label text-[#888480] text-[0.6rem] hover:text-gold transition-colors group">
+              <ArrowLeft size={11} className="group-hover:-translate-x-0.5 transition-transform" />
+              Eserler
+            </Link>
+            <span className="font-label text-[#888480] text-[0.6rem]">/</span>
+            <span className="font-label text-[#888480] text-[0.6rem]">{product.title}</span>
           </div>
 
-          {/* Info */}
-          <div className="px-6 py-12 lg:px-16 lg:py-20 pb-28 lg:pb-20 flex flex-col">
-            <Link
-              href="/galeri"
-              className="inline-flex items-center gap-2 font-label text-brown/40 hover:text-gold text-[0.6rem] mb-10 transition-colors duration-300 group"
-            >
-              <ArrowLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />
-              Galerige Dön
-            </Link>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+            {/* Sol — Görsel */}
+            <div className="relative">
+              <div
+                className="w-full aspect-[4/5] relative overflow-hidden"
+                style={{ background: product.bg }}
+              >
+                <svg
+                  className="absolute inset-0 w-full h-full opacity-30"
+                  viewBox="0 0 600 700"
+                  fill="none"
+                  preserveAspectRatio="xMidYMid slice"
+                >
+                  {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+                    <ellipse
+                      key={angle}
+                      cx="300"
+                      cy="180"
+                      rx="70"
+                      ry="210"
+                      fill="#5c1a2e"
+                      transform={`rotate(${angle} 300 350)`}
+                    />
+                  ))}
+                  <circle cx="300" cy="350" r="55" fill="#5c1a2e" opacity="0.8" />
+                </svg>
 
-            <p className="font-label text-gold text-[0.65rem] mb-4">
-              {mockProduct.category}
-            </p>
+                {/* Badges */}
+                <div className="absolute top-4 left-4 flex gap-2">
+                  <span className="font-label text-[0.55rem] bg-cream/90 text-brown px-3 py-1.5">
+                    {categoryLabels[product.category]}
+                  </span>
+                  {product.featured && (
+                    <span className="font-label text-[0.55rem] bg-gold text-cream px-3 py-1.5">
+                      Öne Çıkan
+                    </span>
+                  )}
+                </div>
 
-            <h1
-              className="font-serif text-brown leading-tight mb-4"
-              style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontStyle: "italic" }}
-            >
-              {mockProduct.title}
-            </h1>
+                {!product.available && (
+                  <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
+                    <span className="font-label text-brown text-[0.7rem] bg-white px-6 py-3 border border-sand">
+                      Tükendi
+                    </span>
+                  </div>
+                )}
+              </div>
 
-            <p
-              className="font-serif text-gold text-3xl mb-8"
-              style={{ fontStyle: "italic" }}
-            >
-              {mockProduct.price}
-            </p>
-
-            <p className="text-brown/60 font-light text-sm leading-relaxed mb-10 border-t border-sand pt-8">
-              {mockProduct.description}
-            </p>
-
-            {/* Details */}
-            <div className="mb-10">
-              <p className="font-label text-brown/40 text-[0.55rem] mb-4">
-                Detaylar
-              </p>
-              <ul className="space-y-2.5">
-                {mockProduct.details.map((d) => (
-                  <li
-                    key={d}
-                    className="flex items-center gap-3 text-brown/55 text-sm font-light"
-                  >
-                    <span className="w-1 h-1 rounded-full bg-gold shrink-0" />
-                    {d}
-                  </li>
+              {/* Trust mini strip */}
+              <div className="grid grid-cols-2 gap-2 mt-3">
+                {trustItems.map(({ icon: Icon, text }) => (
+                  <div key={text} className="flex items-center gap-2 bg-cream-dark px-3 py-2.5">
+                    <Icon size={12} className="text-gold shrink-0" />
+                    <span className="font-label text-[#888480] text-[0.55rem]">{text}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
 
-            <div className="mt-auto">
-              <button
-                onClick={() => setDrawerOpen(true)}
-                className="w-full bg-brown text-cream font-label py-4 hover:bg-brown-light transition-colors duration-300"
+            {/* Sağ — Bilgi */}
+            <div className="flex flex-col lg:sticky lg:top-24 lg:self-start">
+              <p className="font-label text-gold text-[0.6rem] mb-2">
+                {categoryLabels[product.category]}
+              </p>
+
+              <h1
+                className="font-serif text-brown leading-tight mb-4"
+                style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontStyle: "italic" }}
               >
-                Sipariş İçin İletişime Geç
-              </button>
+                {product.title}
+              </h1>
+
+              {/* Fiyat — en belirgin element */}
+              <div className="flex items-baseline gap-3 mb-6 pb-6 border-b border-sand">
+                <span
+                  className="font-serif text-[#1a1a1a]"
+                  style={{ fontSize: "clamp(2rem, 4vw, 2.8rem)", fontStyle: "italic" }}
+                >
+                  ₺{product.price.toLocaleString("tr-TR")}
+                </span>
+                <span className="font-label text-[#888480] text-[0.6rem]">
+                  Kargo dahil değil
+                </span>
+              </div>
+
+              <p className="text-[#888480] font-light text-sm leading-relaxed mb-6">
+                {product.description}
+              </p>
+
+              {/* Ürün detayları */}
+              <div className="mb-8">
+                <p className="font-label text-[#888480] text-[0.55rem] mb-3">Detaylar</p>
+                <ul className="space-y-2">
+                  {product.details.map((d) => (
+                    <li key={d} className="flex items-start gap-2.5 text-[#888480] text-sm font-light">
+                      <span className="w-1 h-1 rounded-full bg-gold shrink-0 mt-2" />
+                      {d}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* CTA Butonları */}
+              {product.available ? (
+                <div className="space-y-3">
+                  {/* Hemen Satın Al — ana CTA */}
+                  <button
+                    onClick={handleBuyNow}
+                    className="w-full flex items-center justify-center gap-2.5 bg-brown text-cream font-label py-4 text-[0.7rem] hover:bg-brown-light transition-colors duration-300 group"
+                  >
+                    <Zap size={14} />
+                    Hemen Satın Al
+                  </button>
+
+                  {/* Sepete Ekle — ikincil */}
+                  <button
+                    onClick={handleAddToCart}
+                    className={`w-full flex items-center justify-center gap-2.5 font-label py-4 text-[0.7rem] border transition-colors duration-300 ${
+                      inCart || added
+                        ? "bg-green-50 border-green-200 text-green-700"
+                        : "border-sand text-[#1a1a1a] hover:border-brown/40"
+                    }`}
+                  >
+                    <ShoppingBag size={14} />
+                    {inCart || added ? "Sepete Eklendi ✓" : "Sepete Ekle"}
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="w-full py-4 bg-sand text-center font-label text-[#888480] text-[0.7rem]">
+                    Bu Eser Tükendi
+                  </div>
+                  <Link
+                    href="/iletisim"
+                    className="w-full flex items-center justify-center gap-2 border border-sand text-[#1a1a1a] font-label py-3.5 text-[0.65rem] hover:border-brown/40 transition-colors"
+                  >
+                    Benzer Eser İçin İletişime Geç
+                  </Link>
+                </div>
+              )}
+
+              {/* Güvence notu */}
+              <p className="font-label text-[#888480] text-[0.55rem] text-center mt-4">
+                Ödeme onayından sonra sipariş hazırlık sürecine alınır.
+                <br />
+                Sorularınız için{" "}
+                <Link href="/iletisim" className="text-gold hover:text-brown transition-colors">
+                  iletişime geçin
+                </Link>
+                .
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Sticky CTA on mobile */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-cream border-t border-sand p-4">
-        <button
-          onClick={() => setDrawerOpen(true)}
-          className="w-full bg-brown text-cream font-label py-4 hover:bg-brown-light transition-colors duration-300"
-        >
-          Sipariş İçin İletişime Geç
-        </button>
-      </div>
-
-      <OrderDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        productTitle={mockProduct.title}
-      />
+      {/* Mobile sticky CTA */}
+      {product.available && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white border-t border-sand p-4 flex gap-3">
+          <button
+            onClick={handleAddToCart}
+            className={`flex-1 flex items-center justify-center gap-1.5 font-label text-[0.6rem] py-3.5 border transition-colors ${
+              inCart || added ? "bg-green-50 border-green-200 text-green-700" : "border-sand text-[#1a1a1a]"
+            }`}
+          >
+            <ShoppingBag size={13} />
+            {inCart || added ? "Sepette ✓" : "Sepete Ekle"}
+          </button>
+          <button
+            onClick={handleBuyNow}
+            className="flex-1 flex items-center justify-center gap-1.5 bg-brown text-cream font-label text-[0.6rem] py-3.5 hover:bg-brown-light transition-colors"
+          >
+            <Zap size={13} />
+            Hemen Al
+          </button>
+        </div>
+      )}
     </>
   );
 }
