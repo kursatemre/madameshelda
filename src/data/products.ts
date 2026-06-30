@@ -1,3 +1,5 @@
+import type { Database } from "@/types/database";
+
 export type ProductCategory = "ev" | "magaza" | "ofis" | "ozel";
 
 export type Product = {
@@ -11,7 +13,46 @@ export type Product = {
   bg: string;
   available: boolean;
   featured: boolean;
+  images?: string[];
 };
+
+export type DBProduct = Database["public"]["Tables"]["products"]["Row"];
+
+const categoryGradients: Record<string, string> = {
+  ev:     "linear-gradient(135deg, #fdf8f3 0%, #f0dde4 100%)",
+  magaza: "linear-gradient(135deg, #faf0f3 0%, #e8c99a 100%)",
+  ofis:   "linear-gradient(135deg, #fdf8f3 0%, #d4b0be 100%)",
+  ozel:   "linear-gradient(135deg, #f5eef0 0%, #5c1a2e 100%)",
+};
+
+export function mapDBProduct(row: DBProduct): Product {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    category: (row.category as ProductCategory) || "ev",
+    price: row.price ?? 0,
+    description: row.description ?? "",
+    details: [
+      row.dimensions ? `Boyut: ${row.dimensions}` : null,
+      row.materials  ? `Malzeme: ${row.materials}` : null,
+      "Teslimat: 2–3 hafta",
+    ].filter(Boolean) as string[],
+    bg: categoryGradients[row.category] ?? categoryGradients.ev,
+    available: row.is_available,
+    featured: row.is_featured,
+    images: row.images ?? [],
+  };
+}
+
+export function toSlug(str: string): string {
+  return str
+    .toLowerCase()
+    .replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ş/g, "s")
+    .replace(/ı/g, "i").replace(/ö/g, "o").replace(/ç/g, "c")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 
 export const categoryLabels: Record<ProductCategory, string> = {
   ev: "Ev & Yaşam",

@@ -1,5 +1,7 @@
 import { GalleryCard } from "./GalleryCard";
-import { products } from "@/data/products";
+import { createClient } from "@/lib/supabase/server";
+import { mapDBProduct, products as mockProducts } from "@/data/products";
+import type { Product } from "@/data/products";
 
 export async function GalleryGrid({
   searchParams,
@@ -9,9 +11,27 @@ export async function GalleryGrid({
   const params = await searchParams;
   const aktifKategori = params.kategori ?? "";
 
+  let allProducts: Product[] = mockProducts;
+
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("products")
+      .select("*")
+      .eq("is_available", true)
+      .order("is_featured", { ascending: false })
+      .order("created_at", { ascending: false });
+
+    if (data && data.length > 0) {
+      allProducts = data.map(mapDBProduct);
+    }
+  } catch {
+    // fall back to mock data if Supabase not configured
+  }
+
   const filtered = aktifKategori
-    ? products.filter((p) => p.category === aktifKategori)
-    : products;
+    ? allProducts.filter((p) => p.category === aktifKategori)
+    : allProducts;
 
   if (filtered.length === 0) {
     return (

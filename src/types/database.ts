@@ -152,6 +152,29 @@ export interface Database {
           }
         ];
       };
+      workshop_images: {
+        Row: {
+          id: string;
+          url: string;
+          caption: string;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          url: string;
+          caption?: string;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          url?: string;
+          caption?: string;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
       contact_requests: {
         Row: {
           id: string;

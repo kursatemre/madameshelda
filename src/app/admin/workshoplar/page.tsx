@@ -1,39 +1,79 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Trash2, Image as ImageIcon, X } from "lucide-react";
+import { toast } from "sonner";
 
 type WorkshopImage = {
   id: string;
   url: string;
   caption: string;
+  sort_order: number;
 };
 
-const defaultImages: WorkshopImage[] = [
-  { id: "1", url: "https://images.unsplash.com/photo-1487530811015-780adza5a8c9?w=600", caption: "Atölye ortamı" },
-  { id: "2", url: "https://images.unsplash.com/photo-1490750967868-88df5691166a?w=600", caption: "Workshop anı" },
-];
-
 export default function AdminWorkshoplarPage() {
-  const [images, setImages] = useState<WorkshopImage[]>(defaultImages);
+  const [images, setImages] = useState<WorkshopImage[]>([]);
+  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [newUrl, setNewUrl] = useState("");
   const [newCaption, setNewCaption] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  const addImage = () => {
+  const fetchImages = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/workshop-images");
+      if (!res.ok) throw new Error();
+      setImages(await res.json());
+    } catch {
+      toast.error("Görseller yüklenemedi.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchImages(); }, [fetchImages]);
+
+  const addImage = async () => {
     if (!newUrl.trim()) return;
-    setImages((p) => [
-      ...p,
-      { id: Date.now().toString(), url: newUrl.trim(), caption: newCaption.trim() },
-    ]);
-    setNewUrl("");
-    setNewCaption("");
-    setModalOpen(false);
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/workshop-images", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: newUrl.trim(), caption: newCaption.trim(), sort_order: images.length }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? "Hata");
+      }
+      const added = await res.json();
+      setImages((p) => [...p, added]);
+      setNewUrl("");
+      setNewCaption("");
+      setModalOpen(false);
+      toast.success("Görsel eklendi.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Görsel eklenemedi.");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const deleteImage = (id: string) => {
-    if (confirm("Bu görseli silmek istediğinize emin misiniz?")) {
-      setImages((p) => p.filter((img) => img.id !== id));
+  const deleteImage = async (id: string) => {
+    if (!confirm("Bu görseli silmek istediğinize emin misiniz?")) return;
+    setImages((p) => p.filter((img) => img.id !== id));
+    try {
+      const res = await fetch("/api/admin/workshop-images", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success("Görsel silindi.");
+    } catch {
+      toast.error("Silme başarısız.");
+      fetchImages();
     }
   };
 
@@ -59,7 +99,9 @@ export default function AdminWorkshoplarPage() {
         Bu görseller workshop sayfalarında atölye atmosferini yansıtır.
       </p>
 
-      {images.length === 0 ? (
+      {loading ? (
+        <div className="py-20 text-center font-label text-[#888480] text-[0.65rem]">Yükleniyor…</div>
+      ) : images.length === 0 ? (
         <div className="border border-dashed border-sand py-20 flex flex-col items-center gap-4 text-center">
           <ImageIcon size={32} className="text-sand-dark" />
           <p className="font-label text-[#888480] text-[0.65rem]">Henüz görsel eklenmedi.</p>
@@ -76,16 +118,10 @@ export default function AdminWorkshoplarPage() {
             <div key={img.id} className="group relative">
               <div className="aspect-square bg-sand overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={img.url}
-                  alt={img.caption}
-                  className="w-full h-full object-cover"
-                />
+                <img src={img.url} alt={img.caption} className="w-full h-full object-cover" />
               </div>
               {img.caption && (
-                <p className="font-label text-[#888480] text-[0.55rem] mt-1.5 truncate">
-                  {img.caption}
-                </p>
+                <p className="font-label text-[#888480] text-[0.55rem] mt-1.5 truncate">{img.caption}</p>
               )}
               <button
                 onClick={() => deleteImage(img.id)}
@@ -131,9 +167,7 @@ export default function AdminWorkshoplarPage() {
                 />
               </div>
               <div>
-                <label className="font-label text-[#888480] text-[0.55rem] block mb-2">
-                  Açıklama (opsiyonel)
-                </label>
+                <label className="font-label text-[#888480] text-[0.55rem] block mb-2">Açıklama (opsiyonel)</label>
                 <input
                   type="text"
                   value={newCaption}
@@ -152,10 +186,10 @@ export default function AdminWorkshoplarPage() {
                 </button>
                 <button
                   onClick={addImage}
-                  disabled={!newUrl.trim()}
+                  disabled={!newUrl.trim() || saving}
                   className="flex-1 bg-brown text-cream font-label text-[0.6rem] py-3 hover:bg-brown-light transition-colors disabled:opacity-50"
                 >
-                  Ekle
+                  {saving ? "Ekleniyor…" : "Ekle"}
                 </button>
               </div>
             </div>
