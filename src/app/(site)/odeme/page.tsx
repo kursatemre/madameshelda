@@ -22,7 +22,7 @@ const BANK = {
   account: "Madame Shelda",
 };
 
-const WHATSAPP = "905001234567";
+const WHATSAPP = "905309713538";
 
 export default function OdemePage() {
   const { items, total, clear } = useCart();
