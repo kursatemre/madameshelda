@@ -12,7 +12,7 @@ export async function POST(request: Request) {
 
   const { table, id, status } = await request.json();
 
-  if (!["registrations", "contact_requests"].includes(table)) {
+  if (!["registrations", "contact_requests", "orders"].includes(table)) {
     return NextResponse.json({ error: "Invalid table" }, { status: 400 });
   }
   if (!["pending", "confirmed", "cancelled"].includes(status)) {
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
   const supabase = await createServiceClient();
   const { error } = await supabase
-    .from(table as "registrations" | "contact_requests")
+    .from(table as "registrations" | "contact_requests" | "orders")
     .update({ status, updated_at: new Date().toISOString() })
     .eq("id", id);
 

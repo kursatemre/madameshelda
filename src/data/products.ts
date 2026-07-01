@@ -8,6 +8,7 @@ export type ProductVariant = {
   hex: string;
   price: number | null;
   available: boolean;
+  image?: string;
 };
 
 export type Product = {

@@ -178,6 +178,56 @@ export interface Database {
         };
         Relationships: [];
       };
+      orders: {
+        Row: {
+          id: string;
+          ref: string;
+          full_name: string;
+          email: string;
+          phone: string;
+          address: string;
+          city: string;
+          note: string | null;
+          items: Json;
+          total: number;
+          payment_method: string;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          ref: string;
+          full_name: string;
+          email: string;
+          phone: string;
+          address: string;
+          city: string;
+          note?: string | null;
+          items: Json;
+          total: number;
+          payment_method: string;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          ref?: string;
+          full_name?: string;
+          email?: string;
+          phone?: string;
+          address?: string;
+          city?: string;
+          note?: string | null;
+          items?: Json;
+          total?: number;
+          payment_method?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       contact_requests: {
         Row: {
           id: string;

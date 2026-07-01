@@ -9,7 +9,7 @@ import { toSlug, categoryLabels } from "@/data/products";
 import type { ProductCategory, ProductVariant } from "@/data/products";
 
 type ImageInput = { id: string; url: string };
-type VariantDraft = { id: string; name: string; hex: string; price: string; available: boolean };
+type VariantDraft = { id: string; name: string; hex: string; price: string; available: boolean; image: string };
 
 type FormData = {
   title: string; slug: string; category: ProductCategory; price: string;
@@ -82,7 +82,7 @@ export default function EserForm({ initial, productId }: EserFormProps) {
     const id = uid();
     setForm((f) => ({
       ...f,
-      variants: [...f.variants, { id, name: "", hex: "#c9a070", price: "", available: true }],
+      variants: [...f.variants, { id, name: "", hex: "#c9a070", price: "", available: true, image: "" }],
     }));
     setActiveVariant(id);
   };
@@ -105,6 +105,7 @@ export default function EserForm({ initial, productId }: EserFormProps) {
           id: v.id, name: v.name.trim(), hex: v.hex,
           price: v.price ? parseFloat(v.price) : null,
           available: v.available,
+          image: v.image || undefined,
         }));
 
       const payload = {
@@ -538,6 +539,67 @@ export default function EserForm({ initial, productId }: EserFormProps) {
                               </label>
                             </div>
                           </div>
+
+                          {/* Varyant görseli */}
+                          <div className="mt-4 pt-4 border-t border-sand">
+                            <label className="font-label text-[#888480] text-[0.5rem] block mb-2">
+                              Varyant Görseli <span className="normal-case text-[#888480]">— bu renk seçildiğinde gösterilir</span>
+                            </label>
+                            <div className="flex items-center gap-3">
+                              {v.image && (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={v.image} alt="" className="w-14 h-14 object-cover border border-sand shrink-0" />
+                              )}
+                              <div className="flex-1">
+                                <input
+                                  type="file"
+                                  id={`variant-file-${v.id}`}
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    setUploadingIds((s) => new Set(s).add(`v-${v.id}`));
+                                    try {
+                                      const fd = new FormData();
+                                      fd.append("file", file);
+                                      fd.append("folder", "products");
+                                      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+                                      const json = await res.json();
+                                      if (!res.ok) throw new Error(json.error);
+                                      updateVariant(v.id, { image: json.url });
+                                      toast.success("Görsel yüklendi.");
+                                    } catch (err) {
+                                      toast.error(err instanceof Error ? err.message : "Hata");
+                                    } finally {
+                                      setUploadingIds((s) => { const n = new Set(s); n.delete(`v-${v.id}`); return n; });
+                                    }
+                                    e.target.value = "";
+                                  }}
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => document.getElementById(`variant-file-${v.id}`)?.click()}
+                                    disabled={uploadingIds.has(`v-${v.id}`)}
+                                    className="flex items-center gap-1.5 font-label text-[0.55rem] px-3 py-1.5 bg-brown text-cream hover:bg-brown-light transition-colors disabled:opacity-50"
+                                  >
+                                    {uploadingIds.has(`v-${v.id}`) ? <Loader2 size={10} className="animate-spin" /> : <Upload size={10} />}
+                                    {uploadingIds.has(`v-${v.id}`) ? "Yükleniyor…" : v.image ? "Değiştir" : "Görsel Yükle"}
+                                  </button>
+                                  {v.image && (
+                                    <button
+                                      type="button"
+                                      onClick={() => updateVariant(v.id, { image: "" })}
+                                      className="font-label text-[0.55rem] px-3 py-1.5 border border-sand text-[#888480] hover:border-red-200 hover:text-red-500 transition-colors"
+                                    >
+                                      Kaldır
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -603,7 +665,7 @@ export default function EserForm({ initial, productId }: EserFormProps) {
                 {form.images[0]?.url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={form.images[0].url} alt=""
+                    src={form.images[0].url} alt="" key={form.images[0].url}
                     className="w-full h-full object-cover"
                     onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                   />

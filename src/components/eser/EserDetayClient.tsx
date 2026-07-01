@@ -24,14 +24,18 @@ export default function EserDetayClient({ product }: { product: Product }) {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
     variants.length > 0 ? variants.find((v) => v.available) ?? null : null
   );
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
 
   const activePrice = selectedVariant?.price ?? product.price;
   const cartId = selectedVariant ? `${product.id}_${selectedVariant.id}` : product.id;
   const inCart = items.some((i) => i.id === cartId);
 
   const isAvailable = selectedVariant ? selectedVariant.available : product.available;
-  const visual = product.images?.[0] ?? product.bg;
-  const isImage = visual.startsWith("http") || visual.startsWith("/");
+  const images = product.images ?? [];
+
+  // variant image overrides the product gallery
+  const displayImage = selectedVariant?.image || images[activeImageIdx] || product.bg;
+  const isImage = displayImage.startsWith("http") || displayImage.startsWith("/");
 
   const handleAddToCart = () => {
     if (inCart) { toast("Zaten sepette", { description: product.title }); return; }
@@ -81,11 +85,11 @@ export default function EserDetayClient({ product }: { product: Product }) {
             <div>
               <div
                 className="w-full aspect-4/5 relative overflow-hidden"
-                style={isImage ? {} : { background: selectedVariant ? selectedVariant.hex : visual }}
+                style={isImage ? {} : { background: selectedVariant ? selectedVariant.hex : product.bg }}
               >
                 {isImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={visual} alt={product.title} className="w-full h-full object-cover" />
+                  <img src={displayImage} alt={product.title} className="w-full h-full object-cover" />
                 ) : (
                   <svg className="absolute inset-0 w-full h-full opacity-30" viewBox="0 0 600 700" fill="none" preserveAspectRatio="xMidYMid slice">
                     {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
@@ -110,6 +114,24 @@ export default function EserDetayClient({ product }: { product: Product }) {
                   </div>
                 )}
               </div>
+
+              {/* Thumbnail gallery — sadece birden fazla görsel varsa */}
+              {images.length > 1 && !selectedVariant?.image && (
+                <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+                  {images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveImageIdx(idx)}
+                      className={`shrink-0 w-16 h-16 overflow-hidden border-2 transition-all ${
+                        activeImageIdx === idx ? "border-brown" : "border-sand hover:border-brown/40"
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Trust strip */}
               <div className="grid grid-cols-2 gap-2 mt-3">

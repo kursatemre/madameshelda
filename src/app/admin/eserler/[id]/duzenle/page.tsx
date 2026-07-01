@@ -33,6 +33,7 @@ export default async function DuzenleEserPage({
           hex: v.hex,
           price: v.price?.toString() ?? "",
           available: v.available,
+          image: v.image ?? "",
         })),
         is_available: data.is_available,
         is_featured: data.is_featured,
