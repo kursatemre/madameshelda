@@ -22,6 +22,7 @@ export interface Database {
           materials: string | null;
           is_available: boolean;
           is_featured: boolean;
+          variants: Json;
           created_at: string;
           updated_at: string;
         };
@@ -37,6 +38,7 @@ export interface Database {
           materials?: string | null;
           is_available?: boolean;
           is_featured?: boolean;
+          variants?: Json;
           created_at?: string;
           updated_at?: string;
         };
@@ -52,6 +54,7 @@ export interface Database {
           materials?: string | null;
           is_available?: boolean;
           is_featured?: boolean;
+          variants?: Json;
           updated_at?: string;
         };
         Relationships: [];

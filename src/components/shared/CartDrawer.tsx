@@ -72,9 +72,15 @@ export function CartDrawer() {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="font-label text-[#1a1a1a] text-[0.65rem] mb-1 truncate">
+                    <p className="font-label text-[#1a1a1a] text-[0.65rem] mb-0.5 truncate">
                       {item.title}
                     </p>
+                    {item.variantName && (
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <div className="w-3 h-3 rounded-full border border-black/10" style={{ background: item.variantHex }} />
+                        <span className="font-label text-[#888480] text-[0.5rem]">{item.variantName}</span>
+                      </div>
+                    )}
                     <p className="font-serif text-brown text-lg" style={{ fontStyle: "italic" }}>
                       ₺{item.price.toLocaleString("tr-TR")}
                     </p>

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, ShoppingBag, Zap, ShieldCheck, Truck, RefreshCw, CheckCircle } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { categoryLabels } from "@/data/products";
-import type { Product } from "@/data/products";
+import type { Product, ProductVariant } from "@/data/products";
 import { toast } from "sonner";
 
 const trustItems = [
@@ -19,29 +19,48 @@ const trustItems = [
 export default function EserDetayClient({ product }: { product: Product }) {
   const { add, items } = useCart();
   const router = useRouter();
-  const [added, setAdded] = useState(false);
 
-  const inCart = items.some((i) => i.id === product.id);
+  const variants = product.variants ?? [];
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
+    variants.length > 0 ? variants.find((v) => v.available) ?? null : null
+  );
+
+  const activePrice = selectedVariant?.price ?? product.price;
+  const cartId = selectedVariant ? `${product.id}_${selectedVariant.id}` : product.id;
+  const inCart = items.some((i) => i.id === cartId);
+
+  const isAvailable = selectedVariant ? selectedVariant.available : product.available;
+  const visual = product.images?.[0] ?? product.bg;
+  const isImage = visual.startsWith("http") || visual.startsWith("/");
 
   const handleAddToCart = () => {
-    if (inCart) {
-      toast("Zaten sepette", { description: product.title });
-      return;
-    }
-    add({ id: product.id, slug: product.slug, title: product.title, price: product.price, bg: product.bg });
-    setAdded(true);
-    toast.success("Sepete eklendi", { description: product.title });
+    if (inCart) { toast("Zaten sepette", { description: product.title }); return; }
+    add({
+      id: cartId,
+      slug: product.slug,
+      title: product.title,
+      price: activePrice,
+      bg: selectedVariant ? selectedVariant.hex : product.bg,
+      variantName: selectedVariant?.name,
+      variantHex: selectedVariant?.hex,
+    });
+    toast.success("Sepete eklendi", { description: selectedVariant ? `${product.title} — ${selectedVariant.name}` : product.title });
   };
 
   const handleBuyNow = () => {
     if (!inCart) {
-      add({ id: product.id, slug: product.slug, title: product.title, price: product.price, bg: product.bg });
+      add({
+        id: cartId,
+        slug: product.slug,
+        title: product.title,
+        price: activePrice,
+        bg: selectedVariant ? selectedVariant.hex : product.bg,
+        variantName: selectedVariant?.name,
+        variantHex: selectedVariant?.hex,
+      });
     }
     router.push("/odeme");
   };
-
-  const visual = product.images?.[0] ?? product.bg;
-  const isImage = visual.startsWith("http") || visual.startsWith("/");
 
   return (
     <>
@@ -59,58 +78,40 @@ export default function EserDetayClient({ product }: { product: Product }) {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
             {/* Sol — Görsel */}
-            <div className="relative">
+            <div>
               <div
-                className="w-full aspect-[4/5] relative overflow-hidden"
-                style={isImage ? {} : { background: visual }}
+                className="w-full aspect-4/5 relative overflow-hidden"
+                style={isImage ? {} : { background: selectedVariant ? selectedVariant.hex : visual }}
               >
                 {isImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={visual} alt={product.title} className="w-full h-full object-cover" />
                 ) : (
-                  <svg
-                    className="absolute inset-0 w-full h-full opacity-30"
-                    viewBox="0 0 600 700"
-                    fill="none"
-                    preserveAspectRatio="xMidYMid slice"
-                  >
+                  <svg className="absolute inset-0 w-full h-full opacity-30" viewBox="0 0 600 700" fill="none" preserveAspectRatio="xMidYMid slice">
                     {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
-                      <ellipse
-                        key={angle}
-                        cx="300"
-                        cy="180"
-                        rx="70"
-                        ry="210"
-                        fill="#5c1a2e"
-                        transform={`rotate(${angle} 300 350)`}
-                      />
+                      <ellipse key={angle} cx="300" cy="180" rx="70" ry="210" fill="#5c1a2e" transform={`rotate(${angle} 300 350)`} />
                     ))}
                     <circle cx="300" cy="350" r="55" fill="#5c1a2e" opacity="0.8" />
                   </svg>
                 )}
 
-                {/* Badges */}
                 <div className="absolute top-4 left-4 flex gap-2">
                   <span className="font-label text-[0.55rem] bg-cream/90 text-brown px-3 py-1.5">
                     {categoryLabels[product.category]}
                   </span>
                   {product.featured && (
-                    <span className="font-label text-[0.55rem] bg-gold text-cream px-3 py-1.5">
-                      Öne Çıkan
-                    </span>
+                    <span className="font-label text-[0.55rem] bg-gold text-cream px-3 py-1.5">Öne Çıkan</span>
                   )}
                 </div>
 
-                {!product.available && (
+                {!isAvailable && (
                   <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
-                    <span className="font-label text-brown text-[0.7rem] bg-white px-6 py-3 border border-sand">
-                      Tükendi
-                    </span>
+                    <span className="font-label text-brown text-[0.7rem] bg-white px-6 py-3 border border-sand">Tükendi</span>
                   </div>
                 )}
               </div>
 
-              {/* Trust mini strip */}
+              {/* Trust strip */}
               <div className="grid grid-cols-2 gap-2 mt-3">
                 {trustItems.map(({ icon: Icon, text }) => (
                   <div key={text} className="flex items-center gap-2 bg-cream-dark px-3 py-2.5">
@@ -123,33 +124,73 @@ export default function EserDetayClient({ product }: { product: Product }) {
 
             {/* Sağ — Bilgi */}
             <div className="flex flex-col lg:sticky lg:top-24 lg:self-start">
-              <p className="font-label text-gold text-[0.6rem] mb-2">
-                {categoryLabels[product.category]}
-              </p>
+              <p className="font-label text-gold text-[0.6rem] mb-2">{categoryLabels[product.category]}</p>
 
-              <h1
-                className="font-serif text-brown leading-tight mb-4"
-                style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontStyle: "italic" }}
-              >
+              <h1 className="font-serif text-brown leading-tight mb-4" style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontStyle: "italic" }}>
                 {product.title}
               </h1>
 
               {/* Fiyat */}
-              <div className="flex items-baseline gap-3 mb-6 pb-6 border-b border-sand">
-                <span
-                  className="font-serif text-[#1a1a1a]"
-                  style={{ fontSize: "clamp(2rem, 4vw, 2.8rem)", fontStyle: "italic" }}
-                >
-                  ₺{product.price.toLocaleString("tr-TR")}
+              <div className="flex items-baseline gap-3 mb-5 pb-5 border-b border-sand">
+                <span className="font-serif text-[#1a1a1a]" style={{ fontSize: "clamp(2rem, 4vw, 2.8rem)", fontStyle: "italic" }}>
+                  ₺{activePrice.toLocaleString("tr-TR")}
                 </span>
+                {selectedVariant?.price && selectedVariant.price !== product.price && (
+                  <span className="font-label text-[#888480] text-[0.55rem] line-through">
+                    ₺{product.price.toLocaleString("tr-TR")}
+                  </span>
+                )}
                 <span className="font-label text-[#888480] text-[0.6rem]">Kargo dahil değil</span>
               </div>
 
-              <p className="text-[#888480] font-light text-sm leading-relaxed mb-6">
-                {product.description}
-              </p>
+              {/* Renk Varyantları */}
+              {variants.length > 0 && (
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="font-label text-[#888480] text-[0.55rem]">Renk Seç</p>
+                    {selectedVariant && (
+                      <span className="font-label text-[#1a1a1a] text-[0.6rem]">{selectedVariant.name}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {variants.map((v) => (
+                      <button
+                        key={v.id}
+                        onClick={() => setSelectedVariant(v)}
+                        disabled={!v.available}
+                        title={v.available ? v.name : `${v.name} — Tükendi`}
+                        className={`relative w-9 h-9 rounded-full border-2 transition-all duration-200 ${
+                          !v.available
+                            ? "opacity-40 cursor-not-allowed border-sand"
+                            : selectedVariant?.id === v.id
+                            ? "border-brown scale-110 shadow-md"
+                            : "border-sand hover:border-brown/50 hover:scale-105"
+                        }`}
+                        style={{ background: v.hex }}
+                      >
+                        {!v.available && (
+                          <span className="absolute inset-0 flex items-center justify-center">
+                            <svg viewBox="0 0 36 36" className="w-full h-full">
+                              <line x1="6" y1="6" x2="30" y2="30" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                          </span>
+                        )}
+                        {selectedVariant?.id === v.id && (
+                          <span className="absolute inset-0 flex items-center justify-center">
+                            <svg viewBox="0 0 36 36" className="w-4 h-4">
+                              <path d="M8 18 L15 25 L28 12" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-              {/* Ürün detayları */}
+              <p className="text-[#888480] font-light text-sm leading-relaxed mb-6">{product.description}</p>
+
+              {/* Detaylar */}
               <div className="mb-8">
                 <p className="font-label text-[#888480] text-[0.55rem] mb-3">Detaylar</p>
                 <ul className="space-y-2">
@@ -163,7 +204,7 @@ export default function EserDetayClient({ product }: { product: Product }) {
               </div>
 
               {/* CTA */}
-              {product.available ? (
+              {isAvailable ? (
                 <div className="space-y-3">
                   <button
                     onClick={handleBuyNow}
@@ -175,24 +216,19 @@ export default function EserDetayClient({ product }: { product: Product }) {
                   <button
                     onClick={handleAddToCart}
                     className={`w-full flex items-center justify-center gap-2.5 font-label py-4 text-[0.7rem] border transition-colors duration-300 ${
-                      inCart || added
-                        ? "bg-green-50 border-green-200 text-green-700"
-                        : "border-sand text-[#1a1a1a] hover:border-brown/40"
+                      inCart ? "bg-green-50 border-green-200 text-green-700" : "border-sand text-[#1a1a1a] hover:border-brown/40"
                     }`}
                   >
                     <ShoppingBag size={14} />
-                    {inCart || added ? "Sepete Eklendi ✓" : "Sepete Ekle"}
+                    {inCart ? "Sepete Eklendi ✓" : "Sepete Ekle"}
                   </button>
                 </div>
               ) : (
                 <div className="space-y-3">
                   <div className="w-full py-4 bg-sand text-center font-label text-[#888480] text-[0.7rem]">
-                    Bu Eser Tükendi
+                    {selectedVariant ? `${selectedVariant.name} Rengi Tükendi` : "Bu Eser Tükendi"}
                   </div>
-                  <Link
-                    href="/iletisim"
-                    className="w-full flex items-center justify-center gap-2 border border-sand text-[#1a1a1a] font-label py-3.5 text-[0.65rem] hover:border-brown/40 transition-colors"
-                  >
+                  <Link href="/iletisim" className="w-full flex items-center justify-center gap-2 border border-sand text-[#1a1a1a] font-label py-3.5 text-[0.65rem] hover:border-brown/40 transition-colors">
                     Benzer Eser İçin İletişime Geç
                   </Link>
                 </div>
@@ -202,10 +238,7 @@ export default function EserDetayClient({ product }: { product: Product }) {
                 Ödeme onayından sonra sipariş hazırlık sürecine alınır.
                 <br />
                 Sorularınız için{" "}
-                <Link href="/iletisim" className="text-gold hover:text-brown transition-colors">
-                  iletişime geçin
-                </Link>
-                .
+                <Link href="/iletisim" className="text-gold hover:text-brown transition-colors">iletişime geçin</Link>.
               </p>
             </div>
           </div>
@@ -213,16 +246,16 @@ export default function EserDetayClient({ product }: { product: Product }) {
       </div>
 
       {/* Mobile sticky CTA */}
-      {product.available && (
+      {isAvailable && (
         <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white border-t border-sand p-4 flex gap-3">
           <button
             onClick={handleAddToCart}
             className={`flex-1 flex items-center justify-center gap-1.5 font-label text-[0.6rem] py-3.5 border transition-colors ${
-              inCart || added ? "bg-green-50 border-green-200 text-green-700" : "border-sand text-[#1a1a1a]"
+              inCart ? "bg-green-50 border-green-200 text-green-700" : "border-sand text-[#1a1a1a]"
             }`}
           >
             <ShoppingBag size={13} />
-            {inCart || added ? "Sepette ✓" : "Sepete Ekle"}
+            {inCart ? "Sepette ✓" : "Sepete Ekle"}
           </button>
           <button
             onClick={handleBuyNow}

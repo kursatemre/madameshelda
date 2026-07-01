@@ -158,13 +158,13 @@ export default function AdminEserlerPage() {
             Eserler
           </h1>
         </div>
-        <button
-          onClick={openAdd}
+        <Link
+          href="/admin/eserler/yeni"
           className="inline-flex items-center gap-2 bg-brown text-white font-label px-5 py-3 hover:bg-brown-light transition-colors duration-200"
         >
           <Plus size={14} />
           Yeni Eser
-        </button>
+        </Link>
       </div>
 
       {loading ? (
@@ -241,13 +241,13 @@ export default function AdminEserlerPage() {
                         >
                           <Eye size={14} />
                         </Link>
-                        <button
-                          onClick={() => openEdit(eser)}
+                        <Link
+                          href={`/admin/eserler/${eser.id}/duzenle`}
                           className="p-1.5 text-[#888480] hover:text-brown transition-colors"
                           title="Düzenle"
                         >
                           <Pencil size={14} />
-                        </button>
+                        </Link>
                         <button
                           onClick={() => deleteEser(eser.id, eser.title)}
                           className="p-1.5 text-[#888480] hover:text-red-500 transition-colors"

@@ -2,6 +2,14 @@ import type { Database } from "@/types/database";
 
 export type ProductCategory = "ev" | "magaza" | "ofis" | "ozel";
 
+export type ProductVariant = {
+  id: string;
+  name: string;
+  hex: string;
+  price: number | null;
+  available: boolean;
+};
+
 export type Product = {
   id: string;
   slug: string;
@@ -14,6 +22,7 @@ export type Product = {
   available: boolean;
   featured: boolean;
   images?: string[];
+  variants?: ProductVariant[];
 };
 
 export type DBProduct = Database["public"]["Tables"]["products"]["Row"];
@@ -42,6 +51,7 @@ export function mapDBProduct(row: DBProduct): Product {
     available: row.is_available,
     featured: row.is_featured,
     images: row.images ?? [],
+    variants: Array.isArray(row.variants) ? (row.variants as ProductVariant[]) : [],
   };
 }
 
@@ -74,6 +84,7 @@ export const products: Product[] = [
     bg: "linear-gradient(135deg, #f5eef0 0%, #d4b0be 50%, #5c1a2e 100%)",
     available: true,
     featured: true,
+    variants: [],
   },
   {
     id: "2",
