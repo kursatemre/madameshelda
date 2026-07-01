@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Plus, X, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, X, Trash2, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { toSlug, categoryLabels } from "@/data/products";
 import type { ProductCategory, ProductVariant } from "@/data/products";
@@ -37,6 +37,32 @@ export default function EserForm({ initial, productId }: EserFormProps) {
   const [form, setForm] = useState<FormData>({ ...defaults, ...initial });
   const [saving, setSaving] = useState(false);
   const [activeVariant, setActiveVariant] = useState<string | null>(null);
+  const [uploadingIds, setUploadingIds] = useState<Set<string>>(new Set());
+  const newFileRef = useRef<HTMLInputElement>(null);
+
+  const uploadFile = async (imageId: string, file: File) => {
+    setUploadingIds((s) => new Set(s).add(imageId));
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "products");
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Yükleme hatası");
+      setImageUrl(imageId, json.url);
+      toast.success("Görsel yüklendi.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Yükleme hatası");
+    } finally {
+      setUploadingIds((s) => { const n = new Set(s); n.delete(imageId); return n; });
+    }
+  };
+
+  const handleNewFile = async (file: File) => {
+    const id = uid();
+    setForm((f) => ({ ...f, images: [...f.images, { id, url: "" }] }));
+    await uploadFile(id, file);
+  };
 
   const set = <K extends keyof FormData>(k: K, v: FormData[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -253,49 +279,120 @@ export default function EserForm({ initial, productId }: EserFormProps) {
                 <Plus size={11} /> Ekle
               </button>
             </div>
+            {/* Hidden file inputs */}
+            <input
+              ref={newFileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleNewFile(f);
+                e.target.value = "";
+              }}
+            />
+
             {form.images.length === 0 ? (
-              <button
-                onClick={addImage}
-                className="w-full border border-dashed border-sand py-10 flex flex-col items-center gap-3 hover:border-brown/30 transition-colors group"
+              <div
+                className="w-full border border-dashed border-sand py-10 flex flex-col items-center gap-3 cursor-pointer hover:border-brown/30 transition-colors group"
+                onClick={() => newFileRef.current?.click()}
               >
-                <Plus size={20} className="text-sand-dark group-hover:text-brown/50 transition-colors" />
-                <span className="font-label text-[#888480] text-[0.6rem]">Görsel URL ekle</span>
-                <span className="font-label text-[#888480] text-[0.5rem]">PNG, JPG — harici URL veya Supabase Storage</span>
-              </button>
+                <Upload size={20} className="text-sand-dark group-hover:text-brown/50 transition-colors" />
+                <span className="font-label text-[#888480] text-[0.6rem]">Dosya seç veya URL ekle</span>
+                <div className="flex gap-3 mt-1">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); newFileRef.current?.click(); }}
+                    className="font-label text-[0.55rem] px-3 py-1.5 bg-brown text-cream hover:bg-brown-light transition-colors"
+                  >
+                    Dosya Seç
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); addImage(); }}
+                    className="font-label text-[0.55rem] px-3 py-1.5 border border-sand text-[#888480] hover:border-brown/40 transition-colors"
+                  >
+                    URL Ekle
+                  </button>
+                </div>
+              </div>
             ) : (
               <div className="space-y-3">
-                {form.images.map((img, idx) => (
-                  <div key={img.id} className="flex items-center gap-3">
-                    <div className="w-12 h-12 shrink-0 bg-sand border border-sand overflow-hidden">
-                      {img.url && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={img.url} alt=""
-                          className="w-full h-full object-cover"
-                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                {form.images.map((img, idx) => {
+                  const isUploading = uploadingIds.has(img.id);
+                  return (
+                    <div key={img.id} className="flex items-center gap-3">
+                      <div className="w-12 h-12 shrink-0 bg-sand border border-sand overflow-hidden relative">
+                        {isUploading ? (
+                          <div className="w-full h-full flex items-center justify-center bg-cream">
+                            <Loader2 size={16} className="text-brown animate-spin" />
+                          </div>
+                        ) : img.url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={img.url} alt=""
+                            className="w-full h-full object-cover"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                          />
+                        ) : null}
+                      </div>
+                      <div className="flex-1">
+                        {idx === 0 && (
+                          <span className="font-label text-[0.5rem] text-gold block mb-1">Ana görsel</span>
+                        )}
+                        <input
+                          type="url"
+                          value={img.url}
+                          onChange={(e) => setImageUrl(img.id, e.target.value)}
+                          className="w-full input-underline py-1.5 text-[#1a1a1a] text-sm"
+                          placeholder="https://... veya dosya yükle →"
+                          disabled={isUploading}
                         />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      {idx === 0 && (
-                        <span className="font-label text-[0.5rem] text-gold block mb-1">Ana görsel</span>
-                      )}
+                      </div>
+                      {/* Per-image file upload */}
                       <input
-                        type="url"
-                        value={img.url}
-                        onChange={(e) => setImageUrl(img.id, e.target.value)}
-                        className="w-full input-underline py-1.5 text-[#1a1a1a] text-sm"
-                        placeholder="https://..."
+                        type="file"
+                        id={`file-${img.id}`}
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) uploadFile(img.id, f);
+                          e.target.value = "";
+                        }}
                       />
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById(`file-${img.id}`)?.click()}
+                        disabled={isUploading}
+                        title="Dosyadan yükle"
+                        className="p-1.5 text-[#888480] hover:text-brown transition-colors shrink-0 disabled:opacity-40"
+                      >
+                        {isUploading ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+                      </button>
+                      <button onClick={() => removeImage(img.id)} className="p-1 text-[#888480] hover:text-red-500 transition-colors shrink-0">
+                        <X size={14} />
+                      </button>
                     </div>
-                    <button onClick={() => removeImage(img.id)} className="p-1 text-[#888480] hover:text-red-500 transition-colors shrink-0">
-                      <X size={14} />
-                    </button>
-                  </div>
-                ))}
-                <button onClick={addImage} className="flex items-center gap-1.5 font-label text-[#888480] text-[0.55rem] hover:text-brown transition-colors mt-2">
-                  <Plus size={11} /> Görsel ekle
-                </button>
+                  );
+                })}
+                <div className="flex items-center gap-3 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => newFileRef.current?.click()}
+                    className="flex items-center gap-1.5 font-label text-[0.55rem] text-brown hover:text-brown-light transition-colors"
+                  >
+                    <Upload size={11} /> Dosya yükle
+                  </button>
+                  <span className="text-sand-dark text-xs">·</span>
+                  <button
+                    type="button"
+                    onClick={addImage}
+                    className="flex items-center gap-1.5 font-label text-[#888480] text-[0.55rem] hover:text-brown transition-colors"
+                  >
+                    <Plus size={11} /> URL ekle
+                  </button>
+                </div>
               </div>
             )}
           </div>

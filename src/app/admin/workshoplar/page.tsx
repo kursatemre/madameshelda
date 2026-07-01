@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { Plus, Trash2, Image as ImageIcon, X, Check, Pencil } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Plus, Trash2, Image as ImageIcon, X, Check, Pencil, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { toSlug } from "@/data/products";
 
@@ -24,6 +24,8 @@ export default function AdminWorkshoplarPage() {
   const [newUrl, setNewUrl] = useState("");
   const [newCaption, setNewCaption] = useState("");
   const [imgSaving, setImgSaving] = useState(false);
+  const [imgUploading, setImgUploading] = useState(false);
+  const imgFileRef = useRef<HTMLInputElement>(null);
 
   const fetchImages = useCallback(async () => {
     setImgLoading(true);
@@ -37,6 +39,24 @@ export default function AdminWorkshoplarPage() {
 
   useEffect(() => { fetchImages(); }, [fetchImages]);
 
+  const uploadImgFile = async (file: File) => {
+    setImgUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "workshops");
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Yükleme hatası");
+      setNewUrl(json.url);
+      toast.success("Görsel yüklendi.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Yükleme hatası");
+    } finally {
+      setImgUploading(false);
+    }
+  };
+
   const addImage = async () => {
     if (!newUrl.trim()) return;
     setImgSaving(true);
@@ -49,7 +69,7 @@ export default function AdminWorkshoplarPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Hata");
       setImages((p) => [...p, json as WorkshopImage]);
-      setNewUrl(""); setNewCaption(""); setImgModal(false);
+      setNewUrl(""); setNewCaption(""); setImgUploading(false); setImgModal(false);
       toast.success("Görsel eklendi.");
     } catch (e) { toast.error(e instanceof Error ? e.message : "Hata"); }
     finally { setImgSaving(false); }
@@ -314,9 +334,46 @@ export default function AdminWorkshoplarPage() {
               <button onClick={() => setImgModal(false)} className="text-[#888480] hover:text-brown transition-colors"><X size={18} /></button>
             </div>
             <div className="space-y-5">
+              {/* Hidden file input */}
+              <input
+                ref={imgFileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadImgFile(f);
+                  e.target.value = "";
+                }}
+              />
+
+              {/* Dosya yükle veya URL */}
               <div>
-                <label className="font-label text-[#888480] text-[0.55rem] block mb-2">Görsel URL <span className="text-gold">*</span></label>
-                <input type="url" value={newUrl} onChange={(e) => setNewUrl(e.target.value)} className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm" placeholder="https://..." autoFocus />
+                <label className="font-label text-[#888480] text-[0.55rem] block mb-2">Görsel <span className="text-gold">*</span></label>
+                <div className="flex gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => imgFileRef.current?.click()}
+                    disabled={imgUploading}
+                    className="flex items-center gap-1.5 font-label text-[0.55rem] px-3 py-2 bg-brown text-cream hover:bg-brown-light transition-colors disabled:opacity-50"
+                  >
+                    {imgUploading ? <Loader2 size={11} className="animate-spin" /> : <Upload size={11} />}
+                    {imgUploading ? "Yükleniyor…" : "Dosya Seç"}
+                  </button>
+                  <span className="font-label text-[#888480] text-[0.55rem] self-center">veya URL gir</span>
+                </div>
+                <input
+                  type="url"
+                  value={newUrl}
+                  onChange={(e) => setNewUrl(e.target.value)}
+                  className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm"
+                  placeholder="https://..."
+                  disabled={imgUploading}
+                />
+                {newUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={newUrl} alt="" className="mt-3 h-24 w-full object-cover border border-sand" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                )}
               </div>
               <div>
                 <label className="font-label text-[#888480] text-[0.55rem] block mb-2">Açıklama (opsiyonel)</label>
@@ -324,7 +381,7 @@ export default function AdminWorkshoplarPage() {
               </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setImgModal(false)} className="flex-1 border border-sand font-label text-[#888480] text-[0.6rem] py-3 hover:border-brown/40 transition-colors">İptal</button>
-                <button onClick={addImage} disabled={!newUrl.trim() || imgSaving} className="flex-1 bg-brown text-cream font-label text-[0.6rem] py-3 hover:bg-brown-light transition-colors disabled:opacity-50">
+                <button onClick={addImage} disabled={!newUrl.trim() || imgSaving || imgUploading} className="flex-1 bg-brown text-cream font-label text-[0.6rem] py-3 hover:bg-brown-light transition-colors disabled:opacity-50">
                   {imgSaving ? "Ekleniyor…" : "Ekle"}
                 </button>
               </div>
