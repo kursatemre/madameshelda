@@ -21,10 +21,10 @@ export default function EserDetayClient({ product }: { product: Product }) {
   const router = useRouter();
 
   const variants = product.variants ?? [];
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
-    variants.length > 0 ? variants.find((v) => v.available) ?? null : null
-  );
+  const initialVariant = variants.length > 0 ? variants.find((v) => v.available) ?? null : null;
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(initialVariant);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
+  const [showVariantImage, setShowVariantImage] = useState(!!initialVariant?.image);
 
   const activePrice = selectedVariant?.price ?? product.price;
   const cartId = selectedVariant ? `${product.id}_${selectedVariant.id}` : product.id;
@@ -33,9 +33,21 @@ export default function EserDetayClient({ product }: { product: Product }) {
   const isAvailable = selectedVariant ? selectedVariant.available : product.available;
   const images = product.images ?? [];
 
-  // variant image overrides the product gallery
-  const displayImage = selectedVariant?.image || images[activeImageIdx] || product.bg;
+  const displayImage =
+    showVariantImage && selectedVariant?.image
+      ? selectedVariant.image
+      : images[activeImageIdx] || product.bg;
   const isImage = displayImage.startsWith("http") || displayImage.startsWith("/");
+
+  const handleSelectVariant = (v: ProductVariant) => {
+    setSelectedVariant(v);
+    setShowVariantImage(!!v.image);
+  };
+
+  const handleThumbnailClick = (idx: number) => {
+    setActiveImageIdx(idx);
+    setShowVariantImage(false);
+  };
 
   const handleAddToCart = () => {
     if (inCart) { toast("Zaten sepette", { description: product.title }); return; }
@@ -115,15 +127,17 @@ export default function EserDetayClient({ product }: { product: Product }) {
                 )}
               </div>
 
-              {/* Thumbnail gallery — sadece birden fazla görsel varsa */}
-              {images.length > 1 && !selectedVariant?.image && (
+              {/* Thumbnail gallery */}
+              {images.length > 1 && (
                 <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
                   {images.map((img, idx) => (
                     <button
                       key={idx}
-                      onClick={() => setActiveImageIdx(idx)}
+                      onClick={() => handleThumbnailClick(idx)}
                       className={`shrink-0 w-16 h-16 overflow-hidden border-2 transition-all ${
-                        activeImageIdx === idx ? "border-brown" : "border-sand hover:border-brown/40"
+                        !showVariantImage && activeImageIdx === idx
+                          ? "border-brown"
+                          : "border-sand hover:border-brown/40"
                       }`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -174,38 +188,61 @@ export default function EserDetayClient({ product }: { product: Product }) {
                       <span className="font-label text-[#1a1a1a] text-[0.6rem]">{selectedVariant.name}</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    {variants.map((v) => (
-                      <button
-                        key={v.id}
-                        onClick={() => setSelectedVariant(v)}
-                        disabled={!v.available}
-                        title={v.available ? v.name : `${v.name} — Tükendi`}
-                        className={`relative w-9 h-9 rounded-full border-2 transition-all duration-200 ${
-                          !v.available
-                            ? "opacity-40 cursor-not-allowed border-sand"
-                            : selectedVariant?.id === v.id
-                            ? "border-brown scale-110 shadow-md"
-                            : "border-sand hover:border-brown/50 hover:scale-105"
-                        }`}
-                        style={{ background: v.hex }}
-                      >
-                        {!v.available && (
-                          <span className="absolute inset-0 flex items-center justify-center">
-                            <svg viewBox="0 0 36 36" className="w-full h-full">
-                              <line x1="6" y1="6" x2="30" y2="30" stroke="white" strokeWidth="2" strokeLinecap="round" />
-                            </svg>
-                          </span>
-                        )}
-                        {selectedVariant?.id === v.id && (
-                          <span className="absolute inset-0 flex items-center justify-center">
-                            <svg viewBox="0 0 36 36" className="w-4 h-4">
-                              <path d="M8 18 L15 25 L28 12" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          </span>
-                        )}
-                      </button>
-                    ))}
+                  <div className="flex items-end gap-3 flex-wrap">
+                    {variants.map((v) => {
+                      const isSelected = selectedVariant?.id === v.id;
+                      return (
+                        <div key={v.id} className="flex flex-col items-center gap-1.5">
+                          {/* Görsel varsa küçük thumbnail, yoksa renk dairesi */}
+                          <button
+                            onClick={() => handleSelectVariant(v)}
+                            disabled={!v.available}
+                            title={v.available ? v.name : `${v.name} — Tükendi`}
+                            className={`relative shrink-0 transition-all duration-200 overflow-hidden ${
+                              v.image ? "w-14 h-14 rounded" : "w-9 h-9 rounded-full"
+                            } border-2 ${
+                              !v.available
+                                ? "opacity-40 cursor-not-allowed border-sand"
+                                : isSelected
+                                ? "border-brown scale-105 shadow-md"
+                                : "border-sand hover:border-brown/50 hover:scale-105"
+                            }`}
+                            style={v.image ? {} : { background: v.hex }}
+                          >
+                            {v.image && (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={v.image} alt={v.name} className="w-full h-full object-cover" />
+                            )}
+
+                            {/* Tükendi çizgisi */}
+                            {!v.available && (
+                              <span className="absolute inset-0 flex items-center justify-center bg-white/40">
+                                <svg viewBox="0 0 36 36" className="w-full h-full">
+                                  <line x1="6" y1="6" x2="30" y2="30" stroke={v.image ? "#1a1a1a" : "white"} strokeWidth="2" strokeLinecap="round" />
+                                </svg>
+                              </span>
+                            )}
+
+                            {/* Seçili tik */}
+                            {isSelected && (
+                              <span className="absolute inset-0 flex items-center justify-center">
+                                <svg viewBox="0 0 36 36" className={v.image ? "w-5 h-5 drop-shadow" : "w-4 h-4"}>
+                                  <path d="M8 18 L15 25 L28 12" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </span>
+                            )}
+                          </button>
+
+                          {/* Görsel varsa altında renk noktası */}
+                          {v.image && (
+                            <span
+                              className="w-3 h-3 rounded-full border border-black/10 shrink-0"
+                              style={{ background: v.hex }}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
