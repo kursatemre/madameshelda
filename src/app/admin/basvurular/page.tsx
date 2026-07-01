@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { CheckCircle, XCircle, Mail, Phone, RefreshCw, MapPin, CreditCard, Package } from "lucide-react";
+import { CheckCircle, XCircle, Mail, Phone, RefreshCw, MapPin, CreditCard } from "lucide-react";
 
 type Status = "pending" | "confirmed" | "cancelled";
 
@@ -129,14 +129,12 @@ export default function AdminBasvurularPage() {
               const isExpanded = expandedOrder === order.id;
               return (
                 <div key={order.id} className="bg-white border border-sand">
-                  {/* Header row */}
-                  <div
-                    className="p-5 cursor-pointer hover:bg-cream/40 transition-colors"
-                    onClick={() => setExpandedOrder(isExpanded ? null : order.id)}
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-1.5 flex-wrap">
+                  {/* Ana bilgiler — her zaman görünür */}
+                  <div className="p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                      <div className="flex-1 min-w-0 space-y-3">
+                        {/* Üst satır: ref, durum, tarih */}
+                        <div className="flex items-center gap-3 flex-wrap">
                           <span className="font-label text-brown text-[0.65rem]">#{order.ref}</span>
                           <span className={`font-label text-[0.55rem] px-2.5 py-1 border ${statusStyle[order.status]}`}>
                             {statusLabel[order.status]}
@@ -144,92 +142,92 @@ export default function AdminBasvurularPage() {
                           <span className="font-label text-[#888480] text-[0.55rem]">
                             {new Date(order.created_at).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                           </span>
-                        </div>
-                        <div className="flex items-center gap-4 flex-wrap">
-                          <span className="font-label text-[#1a1a1a] text-[0.7rem]">{order.full_name}</span>
-                          <span className="font-label text-[#888480] text-[0.6rem] flex items-center gap-1">
-                            <Package size={10} /> {order.items.length} ürün
-                          </span>
-                          <span className="font-label text-[#888480] text-[0.6rem] flex items-center gap-1">
+                          <span className="font-label text-[#888480] text-[0.55rem] flex items-center gap-1">
                             <CreditCard size={10} /> {order.payment_method === "havale" ? "Havale/EFT" : "WhatsApp"}
                           </span>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-4 shrink-0">
-                        <span className="font-serif text-brown text-xl" style={{ fontStyle: "italic" }}>
-                          ₺{order.total.toLocaleString("tr-TR")}
-                        </span>
-                        {order.status === "pending" && (
-                          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              onClick={() => updateStatus(order.id, "confirmed", "orders")}
-                              className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 font-label text-[0.6rem] px-3 py-2 hover:bg-green-100 transition-colors"
-                            >
-                              <CheckCircle size={12} /> Onayla
-                            </button>
-                            <button
-                              onClick={() => updateStatus(order.id, "cancelled", "orders")}
-                              className="inline-flex items-center gap-1.5 bg-red-50 text-red-600 font-label text-[0.6rem] px-3 py-2 hover:bg-red-100 transition-colors"
-                            >
-                              <XCircle size={12} /> İptal
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Expanded details */}
-                  {isExpanded && (
-                    <div className="border-t border-sand p-5 bg-cream/30 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      {/* Müşteri bilgileri */}
-                      <div>
-                        <p className="font-label text-[0.55rem] text-[#888480] uppercase tracking-widest mb-3">Müşteri</p>
-                        <div className="space-y-2">
-                          <a href={`mailto:${order.email}`} className="flex items-center gap-2 font-label text-[0.6rem] text-[#1a1a1a] hover:text-brown transition-colors">
-                            <Mail size={11} className="text-gold" /> {order.email}
-                          </a>
-                          <a href={`tel:${order.phone}`} className="flex items-center gap-2 font-label text-[0.6rem] text-[#1a1a1a] hover:text-brown transition-colors">
-                            <Phone size={11} className="text-gold" /> {order.phone}
-                          </a>
-                          <div className="flex items-start gap-2 font-label text-[0.6rem] text-[#888480]">
-                            <MapPin size={11} className="text-gold shrink-0 mt-0.5" /> {order.address}, {order.city}
-                          </div>
-                          {order.note && (
-                            <p className="text-[#888480] text-xs font-light italic border-l-2 border-sand pl-3 mt-2">
-                              &ldquo;{order.note}&rdquo;
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                        {/* Müşteri adı */}
+                        <p className="font-label text-[#1a1a1a] text-[0.7rem]">{order.full_name}</p>
 
-                      {/* Sipariş detayı */}
-                      <div>
-                        <p className="font-label text-[0.55rem] text-[#888480] uppercase tracking-widest mb-3">Ürünler</p>
-                        <div className="space-y-2">
+                        {/* Ürün listesi — renk varyantı dahil */}
+                        <div className="space-y-1.5">
                           {order.items.map((item, i) => (
-                            <div key={i} className="flex items-center justify-between">
+                            <div key={i} className="flex items-center justify-between gap-3">
                               <div className="flex items-center gap-2 min-w-0">
                                 {item.variantHex && (
-                                  <span className="w-3 h-3 rounded-full shrink-0 border border-black/10" style={{ background: item.variantHex }} />
+                                  <span
+                                    className="w-3.5 h-3.5 rounded-full shrink-0 border border-black/10 shadow-sm"
+                                    style={{ background: item.variantHex }}
+                                    title={item.variantName}
+                                  />
                                 )}
                                 <span className="font-label text-[0.6rem] text-[#1a1a1a] truncate">
-                                  {item.title}{item.variantName ? ` — ${item.variantName}` : ""}
+                                  {item.title}
+                                  {item.variantName && (
+                                    <span className="text-[#888480]"> — {item.variantName}</span>
+                                  )}
                                 </span>
                               </div>
-                              <span className="font-label text-[0.6rem] text-brown shrink-0 ml-3">
+                              <span className="font-label text-[0.6rem] text-brown shrink-0">
                                 ₺{item.price.toLocaleString("tr-TR")}
                               </span>
                             </div>
                           ))}
-                          <div className="border-t border-sand pt-2 flex justify-between mt-1">
-                            <span className="font-label text-[0.6rem] text-[#888480]">Toplam</span>
-                            <span className="font-serif text-brown text-base" style={{ fontStyle: "italic" }}>
+                          <div className="flex justify-between pt-2 border-t border-sand mt-1">
+                            <span className="font-label text-[#888480] text-[0.6rem]">Toplam</span>
+                            <span className="font-serif text-brown text-lg" style={{ fontStyle: "italic" }}>
                               ₺{order.total.toLocaleString("tr-TR")}
                             </span>
                           </div>
                         </div>
                       </div>
+
+                      {/* Sağ: butonlar */}
+                      {order.status === "pending" && (
+                        <div className="flex sm:flex-col gap-2 shrink-0">
+                          <button
+                            onClick={() => updateStatus(order.id, "confirmed", "orders")}
+                            className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 font-label text-[0.6rem] px-3 py-2 hover:bg-green-100 transition-colors"
+                          >
+                            <CheckCircle size={12} /> Onayla
+                          </button>
+                          <button
+                            onClick={() => updateStatus(order.id, "cancelled", "orders")}
+                            className="inline-flex items-center gap-1.5 bg-red-50 text-red-600 font-label text-[0.6rem] px-3 py-2 hover:bg-red-100 transition-colors"
+                          >
+                            <XCircle size={12} /> İptal
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Müşteri detayı — tıklayınca açılır */}
+                    <button
+                      onClick={() => setExpandedOrder(isExpanded ? null : order.id)}
+                      className="mt-3 font-label text-[#888480] text-[0.55rem] hover:text-brown transition-colors"
+                    >
+                      {isExpanded ? "▲ İletişim bilgilerini gizle" : "▼ İletişim & adres bilgileri"}
+                    </button>
+                  </div>
+
+                  {/* Açılır: müşteri iletişim bilgileri */}
+                  {isExpanded && (
+                    <div className="border-t border-sand px-5 py-4 bg-cream/30 flex flex-wrap gap-6">
+                      <a href={`mailto:${order.email}`} className="flex items-center gap-2 font-label text-[0.6rem] text-[#1a1a1a] hover:text-brown transition-colors">
+                        <Mail size={11} className="text-gold" /> {order.email}
+                      </a>
+                      <a href={`tel:${order.phone}`} className="flex items-center gap-2 font-label text-[0.6rem] text-[#1a1a1a] hover:text-brown transition-colors">
+                        <Phone size={11} className="text-gold" /> {order.phone}
+                      </a>
+                      <div className="flex items-start gap-2 font-label text-[0.6rem] text-[#888480]">
+                        <MapPin size={11} className="text-gold shrink-0 mt-0.5" /> {order.address}, {order.city}
+                      </div>
+                      {order.note && (
+                        <p className="w-full text-[#888480] text-xs font-light italic border-l-2 border-sand pl-3">
+                          &ldquo;{order.note}&rdquo;
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
