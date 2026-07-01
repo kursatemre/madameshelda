@@ -91,7 +91,7 @@ export default function AdminBasvurularPage() {
         <div>
           <p className="font-label text-[#888480] text-[0.6rem] mb-1">Yönetim</p>
           <h1 className="font-serif text-[#1a1a1a] text-3xl" style={{ fontStyle: "italic" }}>
-            Başvurular
+            Siparişler
           </h1>
         </div>
         <button onClick={fetchData} className="p-2 text-[#888480] hover:text-brown transition-colors" title="Yenile">

@@ -16,7 +16,7 @@ const navItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/eserler", label: "Eserler", icon: ImageIcon },
   { href: "/admin/workshoplar", label: "Workshoplar", icon: CalendarDays },
-  { href: "/admin/basvurular", label: "Başvurular", icon: ClipboardList },
+  { href: "/admin/basvurular", label: "Siparişler", icon: ClipboardList },
 ];
 
 export function AdminSidebar() {
