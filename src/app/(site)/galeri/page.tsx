@@ -1,5 +1,6 @@
 import { FilterBar } from "@/components/gallery/FilterBar";
 import { GalleryGrid } from "@/components/gallery/GalleryGrid";
+import { createClient } from "@/lib/supabase/server";
 import { ShieldCheck, Truck, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -8,11 +9,22 @@ export const metadata: Metadata = {
   description: "El yapımı çiçek tasarımlarını keşfedin. Her eser özgün, her sipariş özel.",
 };
 
-export default function GaleriPage({
+export default async function GaleriPage({
   searchParams,
 }: {
   searchParams: Promise<{ kategori?: string }>;
 }) {
+  let categories: { name: string; slug: string }[] = [];
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("categories")
+      .select("name, slug")
+      .order("sort_order")
+      .order("name");
+    if (data && data.length > 0) categories = data;
+  } catch {}
+
   return (
     <>
       {/* Header */}
@@ -28,7 +40,6 @@ export default function GaleriPage({
                 Eserlerimiz
               </h1>
             </div>
-            {/* Güven rozetleri */}
             <div className="flex flex-wrap gap-5 lg:gap-6 pb-1">
               {[
                 { icon: Sparkles, text: "100% El Yapımı" },
@@ -47,9 +58,9 @@ export default function GaleriPage({
 
       {/* Filter + Grid */}
       <section className="py-10 lg:py-14">
-        <FilterBar />
+        <FilterBar categories={categories} />
         <div className="max-w-7xl mx-auto px-6 lg:px-12 mt-8">
-          <GalleryGrid searchParams={searchParams} />
+          <GalleryGrid searchParams={searchParams} categories={categories} />
         </div>
       </section>
     </>

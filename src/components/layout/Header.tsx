@@ -8,7 +8,7 @@ import { MobileNav } from "./MobileNav";
 import { useCart } from "@/contexts/CartContext";
 
 const navLinks = [
-  { href: "/galeri", label: "Galeri" },
+  { href: "/galeri", label: "Eserler" },
   { href: "/workshoplar", label: "Workshoplar" },
   { href: "/hakkimizda", label: "Hakkımızda" },
   { href: "/iletisim", label: "İletişim" },

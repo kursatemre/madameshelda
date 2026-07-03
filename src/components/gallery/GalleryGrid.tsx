@@ -3,13 +3,22 @@ import { createClient } from "@/lib/supabase/server";
 import { mapDBProduct, products as mockProducts } from "@/data/products";
 import type { Product } from "@/data/products";
 
+type Category = { name: string; slug: string };
+
 export async function GalleryGrid({
   searchParams,
+  categories,
 }: {
   searchParams: Promise<{ kategori?: string }>;
+  categories: Category[];
 }) {
   const params = await searchParams;
-  const aktifKategori = params.kategori ?? "";
+  const aktifSlug = params.kategori ?? "";
+
+  // slug → kategori adına çevir
+  const aktifKategoriName = aktifSlug
+    ? categories.find((c) => c.slug === aktifSlug)?.name ?? aktifSlug
+    : "";
 
   let allProducts: Product[] = mockProducts;
 
@@ -25,12 +34,10 @@ export async function GalleryGrid({
     if (data && data.length > 0) {
       allProducts = data.map(mapDBProduct);
     }
-  } catch {
-    // fall back to mock data if Supabase not configured
-  }
+  } catch {}
 
-  const filtered = aktifKategori
-    ? allProducts.filter((p) => p.category === aktifKategori)
+  const filtered = aktifKategoriName
+    ? allProducts.filter((p) => p.category === aktifKategoriName)
     : allProducts;
 
   if (filtered.length === 0) {

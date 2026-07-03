@@ -43,7 +43,7 @@ export function Footer() {
               </p>
               <ul className="space-y-3">
                 {[
-                  { href: "/galeri", label: "Galeri" },
+                  { href: "/galeri", label: "Eserler" },
                   { href: "/workshoplar", label: "Workshoplar" },
                   { href: "/hakkimizda", label: "Hakkımızda" },
                 ].map((link) => (

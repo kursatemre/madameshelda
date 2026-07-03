@@ -8,6 +8,7 @@ import {
   ImageIcon,
   CalendarDays,
   ClipboardList,
+  Tag,
   LogOut,
   ExternalLink,
 } from "lucide-react";
@@ -15,6 +16,7 @@ import {
 const navItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/eserler", label: "Eserler", icon: ImageIcon },
+  { href: "/admin/kategoriler", label: "Kategoriler", icon: Tag },
   { href: "/admin/workshoplar", label: "Workshoplar", icon: CalendarDays },
   { href: "/admin/basvurular", label: "Siparişler", icon: ClipboardList },
 ];

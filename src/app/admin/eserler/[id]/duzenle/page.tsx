@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import EserForm from "@/components/admin/EserForm";
-import type { ProductCategory, ProductVariant } from "@/data/products";
+import type { ProductVariant } from "@/data/products";
 
 export default async function DuzenleEserPage({
   params,
@@ -21,7 +21,7 @@ export default async function DuzenleEserPage({
       initial={{
         title: data.title,
         slug: data.slug,
-        category: (data.category as ProductCategory) || "ev",
+        category: data.category ?? "",
         price: data.price?.toString() ?? "",
         description: data.description ?? "",
         dimensions: data.dimensions ?? "",

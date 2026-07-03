@@ -5,7 +5,6 @@ import { ShoppingBag, Eye } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
 import type { Product } from "@/data/products";
-import { categoryLabels } from "@/data/products";
 
 export function GalleryCard({ product }: { product: Product }) {
   const { add, items } = useCart();
@@ -58,7 +57,7 @@ export function GalleryCard({ product }: { product: Product }) {
           {/* Badges */}
           <div className="absolute top-3 left-3 flex gap-1.5">
             <span className="font-label text-[0.5rem] bg-cream/90 text-brown px-2 py-1">
-              {categoryLabels[product.category]}
+              {product.category}
             </span>
             {!product.available && (
               <span className="font-label text-[0.5rem] bg-brown text-cream px-2 py-1">Tükendi</span>

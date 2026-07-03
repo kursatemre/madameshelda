@@ -4,8 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Plus, Pencil, Trash2, Eye, X, Check, ToggleLeft, ToggleRight } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { categoryLabels, toSlug } from "@/data/products";
-import type { ProductCategory } from "@/data/products";
+import { toSlug } from "@/data/products";
 
 type EserRow = {
   id: string;
@@ -21,10 +20,12 @@ type EserRow = {
   created_at: string;
 };
 
+type Category = { id: string; name: string; slug: string };
+
 const emptyForm = {
   title: "",
   slug: "",
-  category: "ev" as ProductCategory,
+  category: "",
   price: "",
   description: "",
   dimensions: "",
@@ -35,6 +36,7 @@ const emptyForm = {
 
 export default function AdminEserlerPage() {
   const [eserler, setEserler] = useState<EserRow[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<EserRow | null>(null);
@@ -54,7 +56,10 @@ export default function AdminEserlerPage() {
     }
   }, []);
 
-  useEffect(() => { fetchEserler(); }, [fetchEserler]);
+  useEffect(() => {
+    fetchEserler();
+    fetch("/api/admin/categories").then((r) => r.json()).then((d) => { if (Array.isArray(d)) setCategories(d); }).catch(() => {});
+  }, [fetchEserler]);
 
   const openAdd = () => {
     setEditTarget(null);
@@ -67,7 +72,7 @@ export default function AdminEserlerPage() {
     setForm({
       title: eser.title,
       slug: eser.slug,
-      category: eser.category as ProductCategory,
+      category: eser.category ?? "",
       price: eser.price?.toString() ?? "",
       description: eser.description ?? "",
       dimensions: eser.dimensions ?? "",
@@ -201,7 +206,7 @@ export default function AdminEserlerPage() {
                     </td>
                     <td className="px-5 py-4">
                       <span className="font-label text-[0.55rem] border border-sand px-2.5 py-1 text-[#888480]">
-                        {categoryLabels[eser.category as ProductCategory] ?? eser.category}
+                        {eser.category || "—"}
                       </span>
                     </td>
                     <td className="px-5 py-4">
@@ -315,16 +320,26 @@ export default function AdminEserlerPage() {
                   <label className="font-label text-[#888480] text-[0.55rem] block mb-2">
                     Kategori <span className="text-gold">*</span>
                   </label>
-                  <select
-                    value={form.category}
-                    onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as ProductCategory }))}
-                    className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm bg-transparent"
-                  >
-                    <option value="ev">Ev & Yaşam</option>
-                    <option value="magaza">Mağaza</option>
-                    <option value="ofis">Ofis</option>
-                    <option value="ozel">Özel Sipariş</option>
-                  </select>
+                  {categories.length > 0 ? (
+                    <select
+                      value={form.category}
+                      onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                      className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm bg-transparent"
+                    >
+                      <option value="">— Seçiniz —</option>
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.name}>{c.name}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={form.category}
+                      onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                      className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm"
+                      placeholder="Kategori adı"
+                    />
+                  )}
                 </div>
                 <div>
                   <label className="font-label text-[#888480] text-[0.55rem] block mb-2">Fiyat (₺)</label>

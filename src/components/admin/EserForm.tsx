@@ -1,25 +1,27 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Plus, X, Trash2, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { toSlug, categoryLabels } from "@/data/products";
-import type { ProductCategory, ProductVariant } from "@/data/products";
+import { toSlug } from "@/data/products";
+import type { ProductVariant } from "@/data/products";
 
 type ImageInput = { id: string; url: string };
 type VariantDraft = { id: string; name: string; hex: string; price: string; available: boolean; image: string };
 
+type Category = { id: string; name: string; slug: string };
+
 type FormData = {
-  title: string; slug: string; category: ProductCategory; price: string;
+  title: string; slug: string; category: string; price: string;
   description: string; dimensions: string; materials: string;
   images: ImageInput[]; variants: VariantDraft[];
   is_available: boolean; is_featured: boolean;
 };
 
 const defaults: FormData = {
-  title: "", slug: "", category: "ev", price: "",
+  title: "", slug: "", category: "", price: "",
   description: "", dimensions: "", materials: "",
   images: [], variants: [],
   is_available: true, is_featured: false,
@@ -28,13 +30,24 @@ const defaults: FormData = {
 export type EserFormProps = {
   initial?: Partial<FormData>;
   productId?: string;
+  categories?: Category[];
 };
 
 function uid() { return Math.random().toString(36).slice(2, 10); }
 
-export default function EserForm({ initial, productId }: EserFormProps) {
+export default function EserForm({ initial, productId, categories: categoriesProp }: EserFormProps) {
   const router = useRouter();
   const [form, setForm] = useState<FormData>({ ...defaults, ...initial });
+  const [categories, setCategories] = useState<Category[]>(categoriesProp ?? []);
+
+  useEffect(() => {
+    if (categoriesProp && categoriesProp.length > 0) return;
+    fetch("/api/admin/categories")
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setCategories(data); })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [saving, setSaving] = useState(false);
   const [activeVariant, setActiveVariant] = useState<string | null>(null);
   const [uploadingIds, setUploadingIds] = useState<Set<string>>(new Set());
@@ -204,15 +217,26 @@ export default function EserForm({ initial, productId }: EserFormProps) {
                   <label className="font-label text-[#888480] text-[0.55rem] block mb-2">
                     Kategori <span className="text-gold">*</span>
                   </label>
-                  <select
-                    value={form.category}
-                    onChange={(e) => set("category", e.target.value as ProductCategory)}
-                    className="w-full input-underline py-2.5 text-[#1a1a1a] bg-transparent"
-                  >
-                    {(Object.keys(categoryLabels) as ProductCategory[]).map((k) => (
-                      <option key={k} value={k}>{categoryLabels[k]}</option>
-                    ))}
-                  </select>
+                  {categories.length > 0 ? (
+                    <select
+                      value={form.category}
+                      onChange={(e) => set("category", e.target.value)}
+                      className="w-full input-underline py-2.5 text-[#1a1a1a] bg-transparent"
+                    >
+                      <option value="">— Seçiniz —</option>
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.name}>{c.name}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={form.category}
+                      onChange={(e) => set("category", e.target.value)}
+                      className="w-full input-underline py-2.5 text-[#1a1a1a]"
+                      placeholder="Önce kategoriler sayfasından ekleyin"
+                    />
+                  )}
                 </div>
                 <div>
                   <label className="font-label text-[#888480] text-[0.55rem] block mb-2">

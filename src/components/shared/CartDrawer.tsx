@@ -1,11 +1,22 @@
 "use client";
 
+import { useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { X, ShoppingBag, ArrowRight, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 export function CartDrawer() {
   const { items, remove, total, count, isOpen, setIsOpen } = useCart();
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const scrollY = window.scrollY;
+    document.body.style.cssText = `overflow:hidden;position:fixed;top:-${scrollY}px;width:100%;`;
+    return () => {
+      document.body.style.cssText = "";
+      window.scrollTo(0, scrollY);
+    };
+  }, [isOpen]);
 
   return (
     <>

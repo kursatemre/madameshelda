@@ -1,7 +1,5 @@
 import type { Database } from "@/types/database";
 
-export type ProductCategory = "ev" | "magaza" | "ofis" | "ozel";
-
 export type ProductVariant = {
   id: string;
   name: string;
@@ -15,7 +13,7 @@ export type Product = {
   id: string;
   slug: string;
   title: string;
-  category: ProductCategory;
+  category: string;
   price: number;
   description: string;
   details: string[];
@@ -28,19 +26,14 @@ export type Product = {
 
 export type DBProduct = Database["public"]["Tables"]["products"]["Row"];
 
-const categoryGradients: Record<string, string> = {
-  ev:     "linear-gradient(135deg, #fdf8f3 0%, #f0dde4 100%)",
-  magaza: "linear-gradient(135deg, #faf0f3 0%, #e8c99a 100%)",
-  ofis:   "linear-gradient(135deg, #fdf8f3 0%, #d4b0be 100%)",
-  ozel:   "linear-gradient(135deg, #f5eef0 0%, #5c1a2e 100%)",
-};
+const defaultBg = "linear-gradient(135deg, #fdf8f3 0%, #f0dde4 100%)";
 
 export function mapDBProduct(row: DBProduct): Product {
   return {
     id: row.id,
     slug: row.slug,
     title: row.title,
-    category: (row.category as ProductCategory) || "ev",
+    category: row.category ?? "",
     price: row.price ?? 0,
     description: row.description ?? "",
     details: [
@@ -48,7 +41,7 @@ export function mapDBProduct(row: DBProduct): Product {
       row.materials  ? `Malzeme: ${row.materials}` : null,
       "Teslimat: 2–3 hafta",
     ].filter(Boolean) as string[],
-    bg: categoryGradients[row.category] ?? categoryGradients.ev,
+    bg: defaultBg,
     available: row.is_available,
     featured: row.is_featured,
     images: row.images ?? [],
@@ -65,19 +58,12 @@ export function toSlug(str: string): string {
     .replace(/^-|-$/g, "");
 }
 
-export const categoryLabels: Record<ProductCategory, string> = {
-  ev: "Ev & Yaşam",
-  magaza: "Mağaza",
-  ofis: "Ofis",
-  ozel: "Özel Sipariş",
-};
-
 export const products: Product[] = [
   {
     id: "1",
     slug: "sonbahar-koleksiyonu",
     title: "Sonbahar Koleksiyonu",
-    category: "ozel",
+    category: "Özel Sipariş",
     price: 4800,
     description:
       "Sonbaharın zengin renk paleti ilhamıyla tasarlanan bu eser; akçaağaç yapraklarının kızıl-altın tonları, kuru lavanta dalları ve büyük solmuş pembe peonies'lerden oluşuyor. Salon veya giriş holü için ideal büyük format.",
@@ -91,7 +77,7 @@ export const products: Product[] = [
     id: "2",
     slug: "beyaz-peonies",
     title: "Beyaz Peonies",
-    category: "ev",
+    category: "Ev & Yaşam",
     price: 2400,
     description:
       "Saf beyaz peonies'lerin zarifliğini yaşayan mekânınıza taşıyın. Minimal ve modern iç mekânlar için tasarlanan bu eser, kalıcı bir doğallık hissi yaratır.",
@@ -104,7 +90,7 @@ export const products: Product[] = [
     id: "3",
     slug: "altin-nisan",
     title: "Altın Nisan",
-    category: "magaza",
+    category: "Mağaza",
     price: 3600,
     description:
       "İlkbaharın ilk altın ışıklarından ilham alan bu düzenleme, butik mağaza veya showroom girişleri için tasarlanmıştır. Canlı altın tonları mekâna davet edici bir atmosfer katar.",
@@ -117,7 +103,7 @@ export const products: Product[] = [
     id: "4",
     slug: "ofis-serisi",
     title: "Ofis Serisi",
-    category: "ofis",
+    category: "Ofis",
     price: 1800,
     description:
       "Çalışma ortamınıza doğallık ve huzur katan sade düzenleme. Resepsiyon veya toplantı odaları için idealdir.",
@@ -130,7 +116,7 @@ export const products: Product[] = [
     id: "5",
     slug: "bahar-esintisi",
     title: "Bahar Esintisi",
-    category: "ev",
+    category: "Ev & Yaşam",
     price: 2100,
     description:
       "Pastel tonlarıyla yatak odası veya oturma odanıza romantik bir hava katan hafif düzenleme. Taze bahar enerjisini mekânınıza taşır.",
@@ -143,7 +129,7 @@ export const products: Product[] = [
     id: "6",
     slug: "lila-romansi",
     title: "Lila Romansi",
-    category: "ozel",
+    category: "Özel Sipariş",
     price: 5200,
     description:
       "Özel bir mekân için tasarlanan bu büyük format eser, yoğun lila ve bordo tonlarıyla güçlü bir ifadeye sahip. Nişan, düğün veya kurumsal mekânlar için de sipariş edilebilir.",
@@ -156,7 +142,7 @@ export const products: Product[] = [
     id: "7",
     slug: "modern-ofis",
     title: "Modern Ofis",
-    category: "ofis",
+    category: "Ofis",
     price: 2800,
     description:
       "Minimalist çizgilerle tasarlanan bu düzenleme, modern ofis ortamlarının estetiğini tamamlar. Beyaz ve krem tonları her dekorla uyum sağlar.",
@@ -169,7 +155,7 @@ export const products: Product[] = [
     id: "8",
     slug: "magaza-cephesi",
     title: "Mağaza Cephesi",
-    category: "magaza",
+    category: "Mağaza",
     price: 6500,
     description:
       "Butik mağaza girişleri için özel tasarlanan bu monumental eser, müşterilerinize unutulmaz bir ilk izlenim yaşatır. Fiyat büyüklük ve karmaşıklığa göre değişir.",
@@ -182,7 +168,7 @@ export const products: Product[] = [
     id: "9",
     slug: "gunes-cicekleri",
     title: "Güneş Çiçekleri",
-    category: "ev",
+    category: "Ev & Yaşam",
     price: 1950,
     description:
       "Sıcak sarı ve turuncu tonlarıyla mutfak veya yemek odanıza neşe katan düzenleme. Küçük ama etkileyici bir detay.",
