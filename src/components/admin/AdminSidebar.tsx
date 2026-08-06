@@ -11,6 +11,7 @@ import {
   Tag,
   LogOut,
   ExternalLink,
+  PenSquare,
 } from "lucide-react";
 
 const navItems = [
@@ -19,6 +20,7 @@ const navItems = [
   { href: "/admin/kategoriler", label: "Kategoriler", icon: Tag },
   { href: "/admin/workshoplar", label: "Workshoplar", icon: CalendarDays },
   { href: "/admin/basvurular", label: "Siparişler", icon: ClipboardList },
+  { href: "/admin/site-icerigi", label: "Site İçeriği", icon: PenSquare },
 ];
 
 export function AdminSidebar() {

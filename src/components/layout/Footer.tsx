@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Mail, Phone } from "lucide-react";
+import type { GeneralContent } from "@/lib/site-content";
 
 function InstagramIcon({ size = 13 }: { size?: number }) {
   return (
@@ -11,7 +12,7 @@ function InstagramIcon({ size = 13 }: { size?: number }) {
   );
 }
 
-export function Footer() {
+export function Footer({ general }: { general: GeneralContent }) {
   return (
     <footer className="bg-[#1a1a1a] text-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-16 lg:py-20">
@@ -30,8 +31,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-cream/50 text-sm font-light leading-relaxed max-w-xs">
-              Soma, Manisa&apos;da el yapımı dev çiçek tasarımları. Her eser,
-              bir hikaye.
+              {general.footer_tagline}
             </p>
           </div>
 
@@ -65,31 +65,31 @@ export function Footer() {
               <ul className="space-y-3">
                 <li>
                   <a
-                    href="tel:+905001234567"
+                    href={`tel:${general.phone.replace(/\s+/g, "")}`}
                     className="flex items-center gap-2 text-cream/60 hover:text-cream text-sm font-light transition-colors duration-300"
                   >
                     <Phone size={13} />
-                    +90 500 123 45 67
+                    {general.phone}
                   </a>
                 </li>
                 <li>
                   <a
-                    href="mailto:info@madameshelda.com"
+                    href={`mailto:${general.email}`}
                     className="flex items-center gap-2 text-cream/60 hover:text-cream text-sm font-light transition-colors duration-300"
                   >
                     <Mail size={13} />
-                    info@madameshelda.com
+                    {general.email}
                   </a>
                 </li>
                 <li>
                   <a
-                    href="https://www.instagram.com"
+                    href={general.instagram_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-cream/60 hover:text-cream text-sm font-light transition-colors duration-300"
                   >
                     <InstagramIcon size={13} />
-                    @madameshelda
+                    {general.instagram_handle}
                   </a>
                 </li>
               </ul>
@@ -100,10 +100,10 @@ export function Footer() {
         {/* Bottom */}
         <div className="mt-16 pt-8 border-t border-brown-light/40 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="font-label text-cream/30 text-[0.6rem]">
-            © 2025 Madame Shelda Design Art. Tüm hakları saklıdır.
+            © {new Date().getFullYear()} {general.footer_copyright}
           </p>
           <p className="font-label text-cream/30 text-[0.6rem]">
-            OrionSoft.dev tarafından geliştirilmiştir
+            {general.footer_credit}
           </p>
         </div>
       </div>

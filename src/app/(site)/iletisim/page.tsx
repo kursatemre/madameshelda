@@ -1,8 +1,6 @@
-"use client";
-
-import { useState } from "react";
-import { toast } from "sonner";
-import { Send, Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, MapPin } from "lucide-react";
+import { getSiteContent } from "@/lib/site-content";
+import { IletisimForm } from "@/components/contact/IletisimForm";
 
 function InstagramIcon({ size = 15, className }: { size?: number; className?: string }) {
   return (
@@ -14,54 +12,29 @@ function InstagramIcon({ size = 15, className }: { size?: number; className?: st
   );
 }
 
-export default function IletisimPage() {
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    full_name: "",
-    email: "",
-    phone: "",
-    message: "",
-  });
+export default async function IletisimPage() {
+  const { general, contact_page } = await getSiteContent(["general", "contact_page"]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          full_name: form.full_name,
-          email: form.email,
-          phone: form.phone || null,
-          subject: "İletişim Formu",
-          message: form.message,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Hata oluştu.");
-      toast.success("Mesajınız iletildi. En kısa sürede dönüş yapacağız.");
-      setForm({ full_name: "", email: "", phone: "", message: "" });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Bir hata oluştu, lütfen tekrar deneyin.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const infoItems = [
+    { icon: Phone, label: "Telefon", value: general.phone, href: `tel:${general.phone.replace(/\s+/g, "")}` },
+    { icon: Mail, label: "E-posta", value: general.email, href: `mailto:${general.email}` },
+    { icon: MapPin, label: "Konum", value: general.address, href: "#" },
+    { icon: InstagramIcon, label: "Instagram", value: general.instagram_handle, href: general.instagram_url },
+  ];
 
   return (
     <>
       {/* Header */}
       <section className="pt-32 pb-16 lg:pt-40 lg:pb-20 px-6 lg:px-12 border-b border-sand">
         <div className="max-w-7xl mx-auto">
-          <p className="font-label text-gold text-[0.65rem] mb-4">— İletişim</p>
+          <p className="font-label text-gold text-[0.65rem] mb-4">{contact_page.eyebrow}</p>
           <h1
             className="font-serif text-brown leading-tight"
             style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)", fontStyle: "italic" }}
           >
-            Birlikte
+            {contact_page.title_line1}
             <br />
-            <span className="text-gold">konuşalım</span>
+            <span className="text-gold">{contact_page.title_line2}</span>
           </h1>
         </div>
       </section>
@@ -72,17 +45,11 @@ export default function IletisimPage() {
           {/* Info */}
           <div>
             <p className="text-brown/60 font-light text-sm leading-relaxed mb-12 max-w-sm">
-              Özel sipariş, workshop soruları veya genel bilgi için bize
-              ulaşabilirsiniz. En kısa sürede yanıt vermeye çalışıyoruz.
+              {contact_page.intro}
             </p>
 
             <div className="space-y-8">
-              {[
-                { icon: Phone, label: "Telefon", value: "+90 500 123 45 67", href: "tel:+905001234567" },
-                { icon: Mail, label: "E-posta", value: "info@madameshelda.com", href: "mailto:info@madameshelda.com" },
-                { icon: MapPin, label: "Konum", value: "Soma, Manisa, Türkiye", href: "#" },
-                { icon: InstagramIcon, label: "Instagram", value: "@madameshelda", href: "https://www.instagram.com" },
-              ].map(({ icon: Icon, label, value, href }) => (
+              {infoItems.map(({ icon: Icon, label, value, href }) => (
                 <div key={label} className="flex items-start gap-5">
                   <div className="w-10 h-10 border border-sand flex items-center justify-center shrink-0">
                     <Icon size={15} className="text-gold" />
@@ -107,64 +74,7 @@ export default function IletisimPage() {
 
           {/* Form */}
           <div>
-            <form onSubmit={handleSubmit} className="space-y-8">
-              {[
-                { name: "full_name", label: "Ad Soyad", type: "text", required: true },
-                { name: "email", label: "E-posta", type: "email", required: true },
-                { name: "phone", label: "Telefon", type: "tel", required: false },
-              ].map((field) => (
-                <div key={field.name} className="relative">
-                  <label className="font-label text-brown/50 text-[0.55rem] block mb-2">
-                    {field.label}
-                    {field.required && <span className="text-gold ml-1">*</span>}
-                  </label>
-                  <input
-                    type={field.type}
-                    required={field.required}
-                    value={form[field.name as keyof typeof form]}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, [field.name]: e.target.value }))
-                    }
-                    className="w-full input-underline py-3 text-brown text-sm focus:outline-none"
-                    placeholder={`${field.label} giriniz`}
-                  />
-                </div>
-              ))}
-
-              <div>
-                <label className="font-label text-brown/50 text-[0.55rem] block mb-2">
-                  Mesajınız <span className="text-gold ml-1">*</span>
-                </label>
-                <textarea
-                  required
-                  rows={4}
-                  value={form.message}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, message: e.target.value }))
-                  }
-                  className="w-full input-underline py-3 text-brown text-sm focus:outline-none resize-none"
-                  placeholder="Nasıl yardımcı olabiliriz?"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-3 bg-brown text-cream font-label py-4 hover:bg-brown-light transition-colors duration-300 disabled:opacity-60 group"
-              >
-                {loading ? (
-                  "Gönderiliyor..."
-                ) : (
-                  <>
-                    Gönder
-                    <Send
-                      size={13}
-                      className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
-                    />
-                  </>
-                )}
-              </button>
-            </form>
+            <IletisimForm />
           </div>
         </div>
       </section>

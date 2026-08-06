@@ -11,7 +11,7 @@ const bgByLevel: Record<string, string> = {
 
 const mockWorkshops: Record<string, {
   title: string; description: string; content: string;
-  duration_hours: number; level: string; includes: string[];
+  duration_hours: number; level: string; includes: string[]; image_url: string | null;
 }> = {
   "baslangic-cicek-sanati": {
     title: "Başlangıç Çiçek Sanatı",
@@ -19,6 +19,7 @@ const mockWorkshops: Record<string, {
     content: "Workshop boyunca Madame Shelda'nın rehberliğinde çiçeğin yapısını, renk uyumunu ve dengelemenin sanatını keşfedeceksiniz. Günün sonunda tamamen sizin imzanızı taşıyan, eve götürebileceğiniz özgün bir eser yaratmış olacaksınız.",
     duration_hours: 3, level: "Başlangıç",
     includes: ["Tüm malzemeler dahil", "Çay & ikram", "Dijital fotoğraflar"],
+    image_url: null,
   },
   "dev-cicek-duzenlemeleri": {
     title: "Dev Çiçek Düzenlemeleri",
@@ -26,6 +27,7 @@ const mockWorkshops: Record<string, {
     content: "Bu workshop; otel lobisi, mağaza vitrini veya etkinlik alanı gibi büyük mekânlar için yapılan impozant düzenlemelerin tasarım mantığını aktarır.",
     duration_hours: 4, level: "Orta",
     includes: ["Tüm malzemeler dahil", "Teknik rehber kitapçık", "Çay & ikram"],
+    image_url: null,
   },
   "dogal-boyama-teknikleri": {
     title: "Doğal Boyama",
@@ -33,6 +35,7 @@ const mockWorkshops: Record<string, {
     content: "Kimyasal boya yerine doğadan elde edilen pigmentlerle çalışmayı, renklerin nasıl dönüştüğünü ve sabitleneceğini keşfedeceksiniz.",
     duration_hours: 5, level: "İleri",
     includes: ["Tüm malzemeler dahil", "Tarif ve teknik notlar", "Çay & ikram"],
+    image_url: null,
   },
 };
 
@@ -51,13 +54,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function WorkshopDetayPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
-  let ws: { title: string; description: string | null; duration_hours: number; level: string; includes: string[] | null } | null = null;
+  let ws: { title: string; description: string | null; duration_hours: number; level: string; includes: string[] | null; image_url: string | null } | null = null;
 
   try {
     const supabase = await createClient();
     const { data } = await supabase
       .from("workshops")
-      .select("title, description, duration_hours, level, includes")
+      .select("title, description, duration_hours, level, includes, image_url")
       .eq("slug", slug)
       .eq("is_active", true)
       .single();
@@ -72,13 +75,21 @@ export default async function WorkshopDetayPage({ params }: { params: Promise<{ 
   return (
     <>
       {/* Hero */}
-      <section className="relative pt-32 lg:pt-40 pb-16 min-h-[55vh] flex flex-col justify-end" style={{ background: bg }}>
-        <svg className="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 1200 600" fill="none" preserveAspectRatio="xMaxYMid slice">
-          {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
-            <ellipse key={angle} cx="900" cy="200" rx="80" ry="220" fill="#5c1a2e" transform={`rotate(${angle} 900 300)`} />
-          ))}
-          <circle cx="900" cy="300" r="60" fill="#5c1a2e" />
-        </svg>
+      <section className="relative pt-32 lg:pt-40 pb-16 min-h-[55vh] flex flex-col justify-end" style={ws.image_url ? undefined : { background: bg }}>
+        {ws.image_url ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={ws.image_url} alt={ws.title} className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-linear-to-t from-cream/95 via-cream/50 to-transparent" />
+          </>
+        ) : (
+          <svg className="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 1200 600" fill="none" preserveAspectRatio="xMaxYMid slice">
+            {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+              <ellipse key={angle} cx="900" cy="200" rx="80" ry="220" fill="#5c1a2e" transform={`rotate(${angle} 900 300)`} />
+            ))}
+            <circle cx="900" cy="300" r="60" fill="#5c1a2e" />
+          </svg>
+        )}
         <div className="relative max-w-7xl mx-auto px-6 lg:px-12 pb-4">
           <Link href="/workshoplar" className="inline-flex items-center gap-2 font-label text-brown/70 hover:text-brown text-[0.6rem] mb-8 transition-colors duration-300 group bg-cream/60 backdrop-blur-sm px-3 py-1.5 w-fit">
             <ArrowLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />

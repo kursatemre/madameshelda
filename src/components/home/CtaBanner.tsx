@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import type { HomeCtaContent } from "@/lib/site-content";
 
-export function CtaBanner() {
+export function CtaBanner({ content }: { content: HomeCtaContent }) {
   return (
     <section className="relative py-24 lg:py-36 px-6 lg:px-12 overflow-hidden">
       {/* Background pattern */}
@@ -30,7 +31,7 @@ export function CtaBanner() {
       <div className="max-w-7xl mx-auto relative">
         <div className="max-w-2xl">
           <p className="font-label text-gold text-[0.65rem] mb-6">
-            — Özel Sipariş
+            {content.eyebrow}
           </p>
 
           <h2
@@ -40,17 +41,15 @@ export function CtaBanner() {
               fontStyle: "italic",
             }}
           >
-            Hayalinizdeki
+            {content.title_line1}
             <br />
-            çiçeği birlikte
+            {content.title_line2}
             <br />
-            <span className="text-brown">tasarlayalım.</span>
+            <span className="text-brown">{content.title_line3}</span>
           </h2>
 
           <p className="text-[#888480] font-light text-sm lg:text-base leading-relaxed mb-10 max-w-lg">
-            Eviniz, ofisiniz veya özel gününüz için tamamen size özel,
-            benzersiz bir çiçek tasarımı. Boyut, renk ve stil tercihlerinizi
-            dinliyoruz.
+            {content.description}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
@@ -58,7 +57,7 @@ export function CtaBanner() {
               href="/iletisim"
               className="inline-flex items-center gap-3 bg-brown text-cream font-label px-8 py-4 hover:bg-brown-light transition-colors duration-300 group w-fit"
             >
-              Hemen İletişime Geç
+              {content.cta_primary_label}
               <ArrowRight
                 size={14}
                 className="group-hover:translate-x-1 transition-transform duration-300"
@@ -68,20 +67,15 @@ export function CtaBanner() {
               href="/galeri"
               className="inline-flex items-center gap-3 border border-sand text-brown font-label px-8 py-4 hover:border-brown/40 transition-colors duration-300 w-fit"
             >
-              İlham Al
+              {content.cta_secondary_label}
             </Link>
           </div>
         </div>
 
         {/* Stats row */}
         <div className="mt-20 lg:mt-24 pt-10 border-t border-sand grid grid-cols-2 lg:grid-cols-4 gap-8">
-          {[
-            { value: "8+", label: "Yıl Deneyim" },
-            { value: "500+", label: "Mutlu Müşteri" },
-            { value: "120+", label: "Tamamlanan Eser" },
-            { value: "40+", label: "Workshop" },
-          ].map((stat) => (
-            <div key={stat.label}>
+          {content.stats.map((stat, i) => (
+            <div key={i}>
               <p
                 className="font-serif text-[#1a1a1a] text-3xl lg:text-4xl mb-1.5"
                 style={{ fontStyle: "italic" }}

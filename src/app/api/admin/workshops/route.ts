@@ -12,7 +12,7 @@ export async function GET() {
   const supabase = await createServiceClient();
   const { data, error } = await supabase
     .from("workshops")
-    .select("id, slug, title, description, duration_hours, level, includes, is_active, created_at")
+    .select("id, slug, title, description, duration_hours, level, includes, image_url, is_active, created_at")
     .order("created_at", { ascending: true });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data ?? []);
@@ -21,7 +21,7 @@ export async function GET() {
 export async function POST(request: Request) {
   if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await request.json();
-  const { slug, title, description, duration_hours, level, includes } = body;
+  const { slug, title, description, duration_hours, level, includes, image_url } = body;
   if (!slug || !title || !level) {
     return NextResponse.json({ error: "slug, title ve level zorunludur." }, { status: 400 });
   }
@@ -35,6 +35,7 @@ export async function POST(request: Request) {
       duration_hours: duration_hours ?? 3,
       level,
       includes: includes ?? [],
+      image_url: image_url ?? null,
       is_active: true,
       date: new Date().toISOString().split("T")[0],
       capacity: 8,

@@ -1,45 +1,50 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import type { HomeWorkshopTeaserContent } from "@/lib/site-content";
 
-const workshops = [
-  {
-    slug: "baslangic-cicek-sanati",
-    title: "Başlangıç Çiçek Sanatı",
-    description: "İlk kez mı? Hiçbir deneyim gerekmez.",
-    level: "Başlangıç",
-    bg: "linear-gradient(135deg, #fdf8f3 0%, #f0dde4 100%)",
-  },
-  {
-    slug: "dev-cicek-duzenlemeleri",
-    title: "Dev Düzenlemeler",
-    description: "Mekânı dönüştüren büyük ölçekli tasarımlar.",
-    level: "Orta",
-    bg: "linear-gradient(135deg, #faf0f3 0%, #e8c99a 100%)",
-  },
-  {
-    slug: "dogal-boyama-teknikleri",
-    title: "Doğal Boyama",
-    description: "Bitkisel pigmentlerle rengin diliyle konuşun.",
-    level: "İleri",
-    bg: "linear-gradient(135deg, #f5eef0 0%, #c9a070 100%)",
-  },
+export type TeaserWorkshop = {
+  slug: string;
+  title: string;
+  description: string | null;
+  level: string;
+  image_url: string | null;
+};
+
+// Gerçek aktif workshop yoksa gösterilecek örnek düzen.
+const mockTeaserWorkshops: TeaserWorkshop[] = [
+  { slug: "baslangic-cicek-sanati", title: "Başlangıç Çiçek Sanatı", description: "İlk kez mı? Hiçbir deneyim gerekmez.", level: "Başlangıç", image_url: null },
+  { slug: "dev-cicek-duzenlemeleri", title: "Dev Düzenlemeler", description: "Mekânı dönüştüren büyük ölçekli tasarımlar.", level: "Orta", image_url: null },
+  { slug: "dogal-boyama-teknikleri", title: "Doğal Boyama", description: "Bitkisel pigmentlerle rengin diliyle konuşun.", level: "İleri", image_url: null },
 ];
 
-export function WorkshopTeaser() {
+const levelBg: Record<string, string> = {
+  "Başlangıç": "linear-gradient(135deg, #fdf8f3 0%, #f0dde4 100%)",
+  "Orta": "linear-gradient(135deg, #faf0f3 0%, #e8c99a 100%)",
+  "İleri": "linear-gradient(135deg, #f5eef0 0%, #c9a070 100%)",
+};
+
+export function WorkshopTeaser({
+  content, workshops,
+}: {
+  content: HomeWorkshopTeaserContent;
+  workshops: TeaserWorkshop[];
+}) {
+  const items = (workshops.length > 0 ? workshops : mockTeaserWorkshops).slice(0, 3);
+
   return (
     <section className="bg-cream-dark py-20 lg:py-32 border-t border-sand">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 lg:mb-16 gap-6">
           <div>
-            <p className="font-label text-gold text-[0.65rem] mb-4">— Workshoplar</p>
+            <p className="font-label text-gold text-[0.65rem] mb-4">{content.eyebrow}</p>
             <h2
               className="font-serif text-[#1a1a1a] leading-tight"
               style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", fontStyle: "italic" }}
             >
-              Atölyede bir gün
+              {content.title_line1}
               <br />
-              <span className="text-brown">birlikte geçirelim</span>
+              <span className="text-brown">{content.title_line2}</span>
             </h2>
           </div>
           <Link
@@ -53,7 +58,7 @@ export function WorkshopTeaser() {
 
         {/* Kartlar */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {workshops.map((ws, i) => (
+          {items.map((ws, i) => (
             <Link
               key={ws.slug}
               href={`/workshop/${ws.slug}`}
@@ -62,27 +67,35 @@ export function WorkshopTeaser() {
               {/* Görsel */}
               <div
                 className="h-40 relative overflow-hidden"
-                style={{ background: ws.bg }}
+                style={ws.image_url ? undefined : { background: levelBg[ws.level] ?? levelBg["Başlangıç"] }}
               >
-                <svg
-                  className="absolute inset-0 w-full h-full opacity-20"
-                  viewBox="0 0 400 200"
-                  fill="none"
-                  preserveAspectRatio="xMidYMid slice"
-                >
-                  {[0, 60, 120, 180, 240, 300].map((angle) => (
-                    <ellipse
-                      key={angle}
-                      cx="200"
-                      cy="100"
-                      rx="30"
-                      ry="90"
-                      fill="#5c1a2e"
-                      transform={`rotate(${angle} 200 100)`}
-                    />
-                  ))}
-                  <circle cx="200" cy="100" r="25" fill="#5c1a2e" />
-                </svg>
+                {ws.image_url ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={ws.image_url} alt={ws.title} className="absolute inset-0 w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/25 via-transparent to-transparent" />
+                  </>
+                ) : (
+                  <svg
+                    className="absolute inset-0 w-full h-full opacity-20"
+                    viewBox="0 0 400 200"
+                    fill="none"
+                    preserveAspectRatio="xMidYMid slice"
+                  >
+                    {[0, 60, 120, 180, 240, 300].map((angle) => (
+                      <ellipse
+                        key={angle}
+                        cx="200"
+                        cy="100"
+                        rx="30"
+                        ry="90"
+                        fill="#5c1a2e"
+                        transform={`rotate(${angle} 200 100)`}
+                      />
+                    ))}
+                    <circle cx="200" cy="100" r="25" fill="#5c1a2e" />
+                  </svg>
+                )}
                 <span className="absolute bottom-3 right-3 font-label text-cream/30 text-[0.55rem]">
                   0{i + 1}
                 </span>

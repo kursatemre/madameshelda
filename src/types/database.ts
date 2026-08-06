@@ -73,6 +73,7 @@ export interface Database {
           level: string;
           location: string | null;
           includes: string[] | null;
+          image_url: string | null;
           is_active: boolean;
           created_at: string;
           updated_at: string;
@@ -90,6 +91,7 @@ export interface Database {
           level: string;
           location?: string | null;
           includes?: string[] | null;
+          image_url?: string | null;
           is_active?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -107,6 +109,7 @@ export interface Database {
           level?: string;
           location?: string | null;
           includes?: string[] | null;
+          image_url?: string | null;
           is_active?: boolean;
           updated_at?: string;
         };
@@ -285,6 +288,24 @@ export interface Database {
           message?: string;
           product_slug?: string | null;
           status?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      site_settings: {
+        Row: {
+          key: string;
+          value: Json;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          value?: Json;
+          updated_at?: string;
+        };
+        Update: {
+          key?: string;
+          value?: Json;
           updated_at?: string;
         };
         Relationships: [];

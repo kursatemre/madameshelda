@@ -14,10 +14,10 @@ const bgByLevel: Record<string, string> = {
   "İleri":     "linear-gradient(135deg, #f5eef0 0%, #c9a070 50%, #5c1a2e 100%)",
 };
 
-const mockWorkshops: { id: string; slug: string; title: string; description: string | null; level: string; duration_hours: number }[] = [
-  { id: "1", slug: "baslangic-cicek-sanati", title: "Başlangıç Çiçek Sanatı", description: "Hiçbir deneyim gerekmez. Renk, form ve dokunuşla tanışın.", level: "Başlangıç", duration_hours: 3 },
-  { id: "2", slug: "dev-cicek-duzenlemeleri", title: "Dev Çiçek Düzenlemeleri", description: "Mekânı dönüştüren büyük ölçekli tasarımların sırları.", level: "Orta", duration_hours: 4 },
-  { id: "3", slug: "dogal-boyama-teknikleri", title: "Doğal Boyama", description: "Bitkisel pigmentlerle rengin diliyle konuşun.", level: "İleri", duration_hours: 5 },
+const mockWorkshops: { id: string; slug: string; title: string; description: string | null; level: string; duration_hours: number; image_url: string | null }[] = [
+  { id: "1", slug: "baslangic-cicek-sanati", title: "Başlangıç Çiçek Sanatı", description: "Hiçbir deneyim gerekmez. Renk, form ve dokunuşla tanışın.", level: "Başlangıç", duration_hours: 3, image_url: null },
+  { id: "2", slug: "dev-cicek-duzenlemeleri", title: "Dev Çiçek Düzenlemeleri", description: "Mekânı dönüştüren büyük ölçekli tasarımların sırları.", level: "Orta", duration_hours: 4, image_url: null },
+  { id: "3", slug: "dogal-boyama-teknikleri", title: "Doğal Boyama", description: "Bitkisel pigmentlerle rengin diliyle konuşun.", level: "İleri", duration_hours: 5, image_url: null },
 ];
 
 export default async function WorkshoplarPage() {
@@ -26,7 +26,7 @@ export default async function WorkshoplarPage() {
     const supabase = await createClient();
     const { data } = await supabase
       .from("workshops")
-      .select("id, slug, title, description, level, duration_hours")
+      .select("id, slug, title, description, level, duration_hours, image_url")
       .eq("is_active", true)
       .order("created_at", { ascending: true });
     if (data && data.length > 0) workshops = data;
@@ -53,7 +53,7 @@ export default async function WorkshoplarPage() {
             Ellerinizle<br /><span className="text-gold">yaratın.</span>
           </h1>
           <p className="text-cream/50 font-light text-sm lg:text-base leading-relaxed max-w-md">
-            Soma, Manisa'daki atölyemizde; çiçek, form ve rengin diliyle buluşuyoruz.
+            Soma, Manisa&apos;daki atölyemizde; çiçek, form ve rengin diliyle buluşuyoruz.
             Her seviyeye açık, küçük gruplarla çalışıyoruz.
           </p>
         </div>
@@ -71,14 +71,22 @@ export default async function WorkshoplarPage() {
               >
                 <div
                   className="h-52 relative overflow-hidden"
-                  style={{ background: bgByLevel[ws.level] ?? bgByLevel["Başlangıç"] }}
+                  style={ws.image_url ? undefined : { background: bgByLevel[ws.level] ?? bgByLevel["Başlangıç"] }}
                 >
-                  <svg className="absolute inset-0 w-full h-full opacity-25" viewBox="0 0 400 300" fill="none" preserveAspectRatio="xMidYMid slice">
-                    {[0, 60, 120, 180, 240, 300].map((angle) => (
-                      <ellipse key={angle} cx="200" cy="150" rx="35" ry="110" fill="#5c1a2e" transform={`rotate(${angle} 200 150)`} />
-                    ))}
-                    <circle cx="200" cy="150" r="30" fill="#5c1a2e" />
-                  </svg>
+                  {ws.image_url ? (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={ws.image_url} alt={ws.title} className="absolute inset-0 w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-transparent" />
+                    </>
+                  ) : (
+                    <svg className="absolute inset-0 w-full h-full opacity-25" viewBox="0 0 400 300" fill="none" preserveAspectRatio="xMidYMid slice">
+                      {[0, 60, 120, 180, 240, 300].map((angle) => (
+                        <ellipse key={angle} cx="200" cy="150" rx="35" ry="110" fill="#5c1a2e" transform={`rotate(${angle} 200 150)`} />
+                      ))}
+                      <circle cx="200" cy="150" r="30" fill="#5c1a2e" />
+                    </svg>
+                  )}
                   <div className="absolute top-4 left-4">
                     <span className="font-label text-[0.5rem] bg-cream/90 text-brown px-2.5 py-1">{ws.level}</span>
                   </div>

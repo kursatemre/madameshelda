@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, X } from "lucide-react";
 
@@ -23,7 +22,13 @@ const navLinks = [
   { href: "/iletisim", label: "İletişim" },
 ];
 
-export function MobileNav({ transparent }: { transparent?: boolean }) {
+export function MobileNav({
+  transparent, logoUrl = "/logo.png", instagramUrl = "https://www.instagram.com",
+}: {
+  transparent?: boolean;
+  logoUrl?: string;
+  instagramUrl?: string;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -43,15 +48,14 @@ export function MobileNav({ transparent }: { transparent?: boolean }) {
         {/* Header */}
         <div className="px-8 pt-10 pb-6 border-b border-brown-light">
           <Link href="/" onClick={() => setOpen(false)}>
-            <Image
-              src="/logo.png"
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={logoUrl}
               alt="Madame Shelda Design Art"
-              width={120}
-              height={48}
               className="h-10 w-auto object-contain brightness-0 invert"
             />
           </Link>
-          {/* Mobil menü her zaman koyu arka plan üzerinde açılır, logo.png invert yeterli */}
+          {/* Mobil menü her zaman koyu arka plan üzerinde açılır, logo invert yeterli */}
         </div>
 
         {/* Navigation */}
@@ -82,7 +86,7 @@ export function MobileNav({ transparent }: { transparent?: boolean }) {
             Soma, Manisa
           </span>
           <a
-            href="https://www.instagram.com"
+            href={instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-gold hover:text-gold-light transition-colors duration-300"

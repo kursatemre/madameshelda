@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck, Copy, MessageCircle, CheckCircle } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import type { GeneralContent } from "@/lib/site-content";
 
 type PaymentMethod = "havale" | "whatsapp";
 
@@ -16,13 +17,14 @@ type FormData = {
   note: string;
 };
 
-const BANK = {
-  name: "Ziraat Bankası",
-  iban: "TR00 0000 0000 0000 0000 0000 00",
-  account: "Madame Shelda",
+// Sayfa ilk açıldığında (fetch tamamlanmadan) kullanılacak değerler — admin
+// panelinden ("Genel" sekmesi) güncellenene kadar bu değerler geçerlidir.
+const DEFAULT_PAYMENT_INFO: Pick<GeneralContent, "bank_name" | "bank_iban" | "bank_account_holder" | "whatsapp_number"> = {
+  bank_name: "Ziraat Bankası",
+  bank_iban: "TR00 0000 0000 0000 0000 0000 00",
+  bank_account_holder: "Madame Shelda",
+  whatsapp_number: "905309713538",
 };
-
-const WHATSAPP = "905309713538";
 
 export default function OdemePage() {
   const { items, total, clear } = useCart();
@@ -33,6 +35,27 @@ export default function OdemePage() {
   const [form, setForm] = useState<FormData>({
     full_name: "", email: "", phone: "", address: "", city: "", note: "",
   });
+  const [paymentInfo, setPaymentInfo] = useState(DEFAULT_PAYMENT_INFO);
+  const BANK = { name: paymentInfo.bank_name, iban: paymentInfo.bank_iban, account: paymentInfo.bank_account_holder };
+  const WHATSAPP = paymentInfo.whatsapp_number;
+
+  // Banka/WhatsApp bilgilerini sessizce güncelle — fetch başarısız olursa
+  // yukarıdaki DEFAULT_PAYMENT_INFO ile checkout çalışmaya devam eder.
+  useEffect(() => {
+    fetch("/api/site-content")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.general) {
+          setPaymentInfo({
+            bank_name: data.general.bank_name,
+            bank_iban: data.general.bank_iban,
+            bank_account_holder: data.general.bank_account_holder,
+            whatsapp_number: data.general.whatsapp_number,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const set = (field: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((p) => ({ ...p, [field]: e.target.value }));

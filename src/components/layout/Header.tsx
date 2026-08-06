@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { ShoppingBag } from "lucide-react";
 import { MobileNav } from "./MobileNav";
 import { useCart } from "@/contexts/CartContext";
+import type { GeneralContent } from "@/lib/site-content";
 
 const navLinks = [
   { href: "/galeri", label: "Eserler" },
@@ -14,7 +14,7 @@ const navLinks = [
   { href: "/iletisim", label: "İletişim" },
 ];
 
-export function Header() {
+export function Header({ general }: { general: GeneralContent }) {
   const [scrolled, setScrolled] = useState(false);
   const { count, setIsOpen } = useCart();
 
@@ -26,6 +26,7 @@ export function Header() {
   }, []);
 
   const transparent = !scrolled;
+  const logoSrc = scrolled ? general.logo_dark_url : general.logo_url;
 
   return (
     <header
@@ -40,13 +41,11 @@ export function Header() {
           {/* Mobile: sol boşluk (hamburger genişliğinde) | Desktop: Logo solda */}
           <div className="w-10 lg:w-auto">
             <Link href="/" className="hidden lg:flex items-center">
-              <Image
-                src={scrolled ? "/logo-dark.png" : "/logo.png"}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logoSrc}
                 alt="Madame Shelda Design Art"
-                width={120}
-                height={48}
                 className="h-10 lg:h-12 w-auto object-contain transition-opacity duration-300"
-                priority
               />
             </Link>
           </div>
@@ -55,13 +54,11 @@ export function Header() {
           <div className="flex-1 flex justify-center lg:justify-center">
             {/* Mobil logo */}
             <Link href="/" className="lg:hidden">
-              <Image
-                src={scrolled ? "/logo-dark.png" : "/logo.png"}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logoSrc}
                 alt="Madame Shelda Design Art"
-                width={120}
-                height={48}
                 className="h-9 w-auto object-contain transition-opacity duration-300"
-                priority
               />
             </Link>
 
@@ -111,7 +108,7 @@ export function Header() {
             >
               Sipariş Ver
             </Link>
-            <MobileNav transparent={transparent} />
+            <MobileNav transparent={transparent} logoUrl={general.logo_url} instagramUrl={general.instagram_url} />
           </div>
         </div>
       </div>

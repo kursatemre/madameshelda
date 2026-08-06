@@ -1,53 +1,58 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import type { HomeFeaturedContent } from "@/lib/site-content";
 
-const featured = [
-  {
-    id: "1",
-    slug: "sonbahar-koleksiyonu",
-    title: "Sonbahar Koleksiyonu",
-    category: "Özel Sipariş",
-    size: "large",
-    accent: "#e8c99a",
-    bg: "linear-gradient(135deg, #f5eef0 0%, #d4b0be 50%, #5c1a2e 100%)",
-  },
-  {
-    id: "2",
-    slug: "beyaz-peonies",
-    title: "Beyaz Peonies",
-    category: "Ev",
-    size: "small",
-    accent: "#faf0f3",
-    bg: "linear-gradient(160deg, #fdf8f3 0%, #f5eef0 40%, #f0dde4 100%)",
-  },
-  {
-    id: "3",
-    slug: "altin-nisan",
-    title: "Altın Nisan",
-    category: "Mağaza",
-    size: "small",
-    accent: "#c9a070",
-    bg: "linear-gradient(135deg, #faf0f3 0%, #e8c99a 60%, #7a2440 100%)",
-  },
-  {
-    id: "4",
-    slug: "ofis-serisi",
-    title: "Ofis Serisi",
-    category: "Ofis",
-    size: "medium",
-    accent: "#d4b0be",
-    bg: "linear-gradient(180deg, #f5eef0 0%, #d4b0be 100%)",
-  },
+export type FeaturedProduct = {
+  slug: string;
+  title: string;
+  category: string;
+  images: string[];
+};
+
+// Gerçek "Öne Çıkan" ürün yoksa (henüz işaretlenmemiş) gösterilecek örnek düzen.
+const mockFeatured: FeaturedProduct[] = [
+  { slug: "sonbahar-koleksiyonu", title: "Sonbahar Koleksiyonu", category: "Özel Sipariş", images: [] },
+  { slug: "beyaz-peonies", title: "Beyaz Peonies", category: "Ev", images: [] },
+  { slug: "altin-nisan", title: "Altın Nisan", category: "Mağaza", images: [] },
+  { slug: "ofis-serisi", title: "Ofis Serisi", category: "Ofis", images: [] },
 ];
 
-export function FeaturedGallery() {
+// Görseli olmayan slotlar için pozisyona göre dekoratif gradient/renk.
+const slotStyle = [
+  { accent: "#e8c99a", bg: "linear-gradient(135deg, #f5eef0 0%, #d4b0be 50%, #5c1a2e 100%)" },
+  { accent: "#faf0f3", bg: "linear-gradient(160deg, #fdf8f3 0%, #f5eef0 40%, #f0dde4 100%)" },
+  { accent: "#c9a070", bg: "linear-gradient(135deg, #faf0f3 0%, #e8c99a 60%, #7a2440 100%)" },
+  { accent: "#d4b0be", bg: "linear-gradient(180deg, #f5eef0 0%, #d4b0be 100%)" },
+];
+const slotWrapClass = [
+  "lg:row-span-2 img-zoom group relative cursor-pointer",
+  "img-zoom group relative cursor-pointer sm:col-span-1",
+  "img-zoom group relative cursor-pointer",
+  "img-zoom group relative cursor-pointer sm:col-span-2 lg:col-span-2",
+];
+const slotBoxClass = [
+  "w-full h-72 sm:h-80 lg:h-full min-h-[420px] relative overflow-hidden",
+  "w-full h-60 lg:h-64 relative overflow-hidden",
+  "w-full h-60 lg:h-64 relative overflow-hidden",
+  "w-full h-60 lg:h-64 relative overflow-hidden",
+];
+const slotSize: ("large" | "medium" | "small")[] = ["large", "small", "small", "medium"];
+
+export function FeaturedGallery({
+  content, products,
+}: {
+  content: HomeFeaturedContent;
+  products: FeaturedProduct[];
+}) {
+  const items = (products.length > 0 ? products : mockFeatured).slice(0, 4);
+
   return (
     <section className="py-20 lg:py-32 px-6 lg:px-12 max-w-7xl mx-auto">
       {/* Section Header */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 lg:mb-16 gap-6">
         <div>
           <p className="font-label text-gold text-[0.65rem] mb-4">
-            — Seçkin Eserler
+            {content.eyebrow}
           </p>
           <h2
             className="font-serif text-[#1a1a1a] leading-tight"
@@ -56,9 +61,9 @@ export function FeaturedGallery() {
               fontStyle: "italic",
             }}
           >
-            Her mekan için
+            {content.title_line1}
             <br />
-            <span className="text-brown">özgün bir eser</span>
+            <span className="text-brown">{content.title_line2}</span>
           </h2>
         </div>
         <Link
@@ -75,57 +80,25 @@ export function FeaturedGallery() {
 
       {/* Asymmetric Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
-        {/* Large card — spans 2 rows on desktop */}
-        <div className="lg:row-span-2 img-zoom group relative cursor-pointer">
-          <Link href={`/eser/${featured[0].slug}`}>
-            <div
-              className="w-full h-72 sm:h-80 lg:h-full min-h-[420px] relative overflow-hidden"
-              style={{ background: featured[0].bg }}
-            >
-              <FlowerDecor color={featured[0].accent} size="large" />
-              <CardOverlay title={featured[0].title} category={featured[0].category} />
+        {items.map((item, i) => {
+          const style = slotStyle[i];
+          const photo = item.images?.[0];
+          return (
+            <div key={item.slug} className={slotWrapClass[i]}>
+              <Link href={`/eser/${item.slug}`}>
+                <div className={slotBoxClass[i]} style={photo ? undefined : { background: style.bg }}>
+                  {photo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={photo} alt={item.title} className="absolute inset-0 w-full h-full object-cover" />
+                  ) : (
+                    <FlowerDecor color={style.accent} size={slotSize[i]} />
+                  )}
+                  <CardOverlay title={item.title} category={item.category} />
+                </div>
+              </Link>
             </div>
-          </Link>
-        </div>
-
-        {/* Top right small */}
-        <div className="img-zoom group relative cursor-pointer sm:col-span-1">
-          <Link href={`/eser/${featured[1].slug}`}>
-            <div
-              className="w-full h-60 lg:h-64 relative overflow-hidden"
-              style={{ background: featured[1].bg }}
-            >
-              <FlowerDecor color={featured[1].accent} size="small" />
-              <CardOverlay title={featured[1].title} category={featured[1].category} />
-            </div>
-          </Link>
-        </div>
-
-        {/* Top right medium */}
-        <div className="img-zoom group relative cursor-pointer">
-          <Link href={`/eser/${featured[2].slug}`}>
-            <div
-              className="w-full h-60 lg:h-64 relative overflow-hidden"
-              style={{ background: featured[2].bg }}
-            >
-              <FlowerDecor color={featured[2].accent} size="small" />
-              <CardOverlay title={featured[2].title} category={featured[2].category} />
-            </div>
-          </Link>
-        </div>
-
-        {/* Bottom spanning */}
-        <div className="img-zoom group relative cursor-pointer sm:col-span-2 lg:col-span-2">
-          <Link href={`/eser/${featured[3].slug}`}>
-            <div
-              className="w-full h-60 lg:h-64 relative overflow-hidden"
-              style={{ background: featured[3].bg }}
-            >
-              <FlowerDecor color={featured[3].accent} size="medium" />
-              <CardOverlay title={featured[3].title} category={featured[3].category} />
-            </div>
-          </Link>
-        </div>
+          );
+        })}
       </div>
     </section>
   );
@@ -162,7 +135,7 @@ function FlowerDecor({ color, size }: { color: string; size: "small" | "medium" 
 
 function CardOverlay({ title, category }: { title: string; category: string }) {
   return (
-    <div className="absolute inset-0 bg-gradient-to-t from-brown/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
+    <div className="absolute inset-0 bg-linear-to-t from-brown/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
       <span className="font-label text-gold text-[0.55rem] mb-2">{category}</span>
       <h3
         className="font-serif text-cream text-xl"

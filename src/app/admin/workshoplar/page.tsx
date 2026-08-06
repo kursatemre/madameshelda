@@ -8,10 +8,10 @@ import { toSlug } from "@/data/products";
 type WorkshopImage = { id: string; url: string; caption: string; sort_order: number };
 type WorkshopRow = {
   id: string; slug: string; title: string; description: string | null;
-  duration_hours: number; level: string; includes: string[] | null; is_active: boolean;
+  duration_hours: number; level: string; includes: string[] | null; image_url: string | null; is_active: boolean;
 };
 
-const emptyWsForm = { title: "", slug: "", description: "", duration_hours: "3", level: "Başlangıç", includes: "" };
+const emptyWsForm = { title: "", slug: "", description: "", duration_hours: "3", level: "Başlangıç", includes: "", image_url: "" };
 const LEVELS = ["Başlangıç", "Orta", "İleri"];
 
 export default function AdminWorkshoplarPage() {
@@ -123,8 +123,28 @@ export default function AdminWorkshoplarPage() {
       duration_hours: ws.duration_hours.toString(),
       level: ws.level,
       includes: (ws.includes ?? []).join("\n"),
+      image_url: ws.image_url ?? "",
     });
     setWsModal(true);
+  };
+
+  const [wsImageUploading, setWsImageUploading] = useState(false);
+  const uploadWsImage = async (file: File) => {
+    setWsImageUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "workshops");
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Yükleme hatası");
+      setWsForm((f) => ({ ...f, image_url: json.url }));
+      toast.success("Görsel yüklendi.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Yükleme hatası");
+    } finally {
+      setWsImageUploading(false);
+    }
   };
 
   const saveWorkshop = async () => {
@@ -140,6 +160,7 @@ export default function AdminWorkshoplarPage() {
         duration_hours: parseInt(wsForm.duration_hours) || 3,
         level: wsForm.level,
         includes: wsForm.includes.split("\n").map((s) => s.trim()).filter(Boolean),
+        image_url: wsForm.image_url || null,
       };
       const url = editTarget ? `/api/admin/workshops/${editTarget.id}` : "/api/admin/workshops";
       const method = editTarget ? "PATCH" : "POST";
@@ -231,6 +252,16 @@ export default function AdminWorkshoplarPage() {
             <div className="space-y-3">
               {workshops.map((ws) => (
                 <div key={ws.id} className="border border-sand p-5 flex items-start gap-5 hover:border-brown/20 transition-colors">
+                  <div className="w-14 h-14 shrink-0 bg-sand overflow-hidden">
+                    {ws.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={ws.image_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ImageIcon size={16} className="text-sand-dark" />
+                      </div>
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-1.5">
                       <span className="font-label text-[0.55rem] border border-sand px-2 py-0.5 text-[#888480]">
@@ -435,6 +466,58 @@ export default function AdminWorkshoplarPage() {
               <div>
                 <label className="font-label text-[#888480] text-[0.55rem] block mb-2">Açıklama</label>
                 <textarea value={wsForm.description} onChange={(e) => setWsForm((f) => ({ ...f, description: e.target.value }))} className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm resize-none" rows={3} placeholder="Workshop hakkında kısa bilgi…" />
+              </div>
+              <div>
+                <label className="font-label text-[#888480] text-[0.55rem] block mb-2">
+                  Kapak Görseli <span className="text-[#888480]">(boşsa seviyeye göre gradient kullanılır)</span>
+                </label>
+                <input
+                  type="file"
+                  id="ws-image-file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) uploadWsImage(f);
+                    e.target.value = "";
+                  }}
+                />
+                <div className="flex items-center gap-3">
+                  {wsForm.image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={wsForm.image_url} alt="" className="w-14 h-14 object-cover border border-sand shrink-0" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                  )}
+                  <div className="flex-1 space-y-2 min-w-0">
+                    <input
+                      type="url"
+                      value={wsForm.image_url}
+                      onChange={(e) => setWsForm((f) => ({ ...f, image_url: e.target.value }))}
+                      className="w-full input-underline py-2 text-[#1a1a1a] text-sm"
+                      placeholder="https://... veya dosya yükle →"
+                      disabled={wsImageUploading}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById("ws-image-file")?.click()}
+                        disabled={wsImageUploading}
+                        className="flex items-center gap-1.5 font-label text-[0.55rem] px-3 py-1.5 bg-brown text-cream hover:bg-brown-light transition-colors disabled:opacity-50"
+                      >
+                        {wsImageUploading ? <Loader2 size={10} className="animate-spin" /> : <Upload size={10} />}
+                        {wsImageUploading ? "Yükleniyor…" : "Dosya Yükle"}
+                      </button>
+                      {wsForm.image_url && (
+                        <button
+                          type="button"
+                          onClick={() => setWsForm((f) => ({ ...f, image_url: "" }))}
+                          className="font-label text-[0.55rem] px-3 py-1.5 border border-sand text-[#888480] hover:border-red-200 hover:text-red-500 transition-colors"
+                        >
+                          Kaldır
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
               <div>
                 <label className="font-label text-[#888480] text-[0.55rem] block mb-2">
