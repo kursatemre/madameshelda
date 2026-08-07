@@ -201,31 +201,32 @@ export default function AdminWorkshoplarPage() {
   };
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 gap-3">
         <div>
           <p className="font-label text-[#888480] text-[0.6rem] mb-1">Yönetim</p>
-          <h1 className="font-serif text-[#1a1a1a] text-3xl" style={{ fontStyle: "italic" }}>
+          <h1 className="font-serif text-[#1a1a1a] text-2xl sm:text-3xl" style={{ fontStyle: "italic" }}>
             Workshoplar
           </h1>
         </div>
         <button
           onClick={tab === "gorseller" ? () => setImgModal(true) : openAdd}
-          className="inline-flex items-center gap-2 bg-brown text-white font-label px-5 py-3 hover:bg-brown-light transition-colors duration-200"
+          className="inline-flex items-center gap-2 bg-brown text-white font-label px-4 sm:px-5 py-3 hover:bg-brown-light transition-colors duration-200 shrink-0"
         >
           <Plus size={14} />
-          {tab === "gorseller" ? "Görsel Ekle" : "Workshop Ekle"}
+          <span className="hidden sm:inline">{tab === "gorseller" ? "Görsel Ekle" : "Workshop Ekle"}</span>
+          <span className="sm:hidden">Ekle</span>
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-sand mb-8">
+      <div className="flex border-b border-sand mb-8 overflow-x-auto">
         {(["workshoplar", "gorseller"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`font-label text-[0.6rem] px-5 py-3 border-b-2 transition-colors ${
+            className={`font-label text-[0.6rem] px-3 sm:px-5 py-3 border-b-2 transition-colors whitespace-nowrap shrink-0 ${
               tab === t ? "border-brown text-brown" : "border-transparent text-[#888480] hover:text-brown/60"
             }`}
           >
@@ -251,55 +252,75 @@ export default function AdminWorkshoplarPage() {
           ) : (
             <div className="space-y-3">
               {workshops.map((ws) => (
-                <div key={ws.id} className="border border-sand p-5 flex items-start gap-5 hover:border-brown/20 transition-colors">
-                  <div className="w-14 h-14 shrink-0 bg-sand overflow-hidden">
-                    {ws.image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={ws.image_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ImageIcon size={16} className="text-sand-dark" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-1.5">
-                      <span className="font-label text-[0.55rem] border border-sand px-2 py-0.5 text-[#888480]">
-                        {ws.level}
-                      </span>
-                      <span className="font-label text-[0.55rem] text-[#888480]">
-                        {ws.duration_hours} saat
-                      </span>
+                <div key={ws.id} className="border border-sand p-4 sm:p-5 hover:border-brown/20 transition-colors">
+                  <div className="flex items-start gap-4 sm:gap-5">
+                    <div className="w-14 h-14 shrink-0 bg-sand overflow-hidden">
+                      {ws.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={ws.image_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ImageIcon size={16} className="text-sand-dark" />
+                        </div>
+                      )}
                     </div>
-                    <p className="font-label text-[#1a1a1a] text-[0.65rem] mb-1">{ws.title}</p>
-                    <p className="font-label text-[#888480] text-[0.55rem]">/{ws.slug}</p>
-                    {ws.description && (
-                      <p className="text-[#888480] text-xs font-light mt-2 line-clamp-2">{ws.description}</p>
-                    )}
-                    {ws.includes && ws.includes.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {ws.includes.map((inc) => (
-                          <span key={inc} className="font-label text-[0.5rem] bg-cream px-2 py-0.5 text-[#888480]">
-                            {inc}
-                          </span>
-                        ))}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-1.5">
+                        <span className="font-label text-[0.55rem] border border-sand px-2 py-0.5 text-[#888480]">
+                          {ws.level}
+                        </span>
+                        <span className="font-label text-[0.55rem] text-[#888480]">
+                          {ws.duration_hours} saat
+                        </span>
                       </div>
-                    )}
+                      <p className="font-label text-[#1a1a1a] text-[0.65rem] mb-1">{ws.title}</p>
+                      <p className="font-label text-[#888480] text-[0.55rem]">/{ws.slug}</p>
+                      {ws.description && (
+                        <p className="text-[#888480] text-xs font-light mt-2 line-clamp-2">{ws.description}</p>
+                      )}
+                      {ws.includes && ws.includes.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {ws.includes.map((inc) => (
+                            <span key={inc} className="font-label text-[0.5rem] bg-cream px-2 py-0.5 text-[#888480]">
+                              {inc}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {/* Aksiyonlar — masaüstü (sm ve üstü), sağda */}
+                    <div className="hidden sm:flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => toggleActive(ws.id, ws.is_active)}
+                        className={`font-label text-[0.55rem] px-2.5 py-1 transition-colors ${
+                          ws.is_active ? "bg-green-50 text-green-700" : "bg-red-50 text-red-500"
+                        }`}
+                      >
+                        {ws.is_active ? "Aktif" : "Pasif"}
+                      </button>
+                      <button onClick={() => openEdit(ws)} className="p-1.5 text-[#888480] hover:text-brown transition-colors">
+                        <Pencil size={14} />
+                      </button>
+                      <button onClick={() => deleteWorkshop(ws.id, ws.title)} className="p-1.5 text-[#888480] hover:text-red-500 transition-colors">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  {/* Aksiyonlar — mobil, alt satırda */}
+                  <div className="flex sm:hidden items-center gap-2 mt-3 pt-3 border-t border-sand">
                     <button
                       onClick={() => toggleActive(ws.id, ws.is_active)}
-                      className={`font-label text-[0.55rem] px-2.5 py-1 transition-colors ${
+                      className={`font-label text-[0.55rem] px-2.5 py-1.5 transition-colors ${
                         ws.is_active ? "bg-green-50 text-green-700" : "bg-red-50 text-red-500"
                       }`}
                     >
                       {ws.is_active ? "Aktif" : "Pasif"}
                     </button>
-                    <button onClick={() => openEdit(ws)} className="p-1.5 text-[#888480] hover:text-brown transition-colors">
-                      <Pencil size={14} />
+                    <button onClick={() => openEdit(ws)} className="p-2 text-[#888480] hover:text-brown transition-colors">
+                      <Pencil size={15} />
                     </button>
-                    <button onClick={() => deleteWorkshop(ws.id, ws.title)} className="p-1.5 text-[#888480] hover:text-red-500 transition-colors">
-                      <Trash2 size={14} />
+                    <button onClick={() => deleteWorkshop(ws.id, ws.title)} className="p-2 text-[#888480] hover:text-red-500 transition-colors">
+                      <Trash2 size={15} />
                     </button>
                   </div>
                 </div>
@@ -451,7 +472,7 @@ export default function AdminWorkshoplarPage() {
                   placeholder="baslangic-cicek-sanati"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="font-label text-[#888480] text-[0.55rem] block mb-2">Seviye <span className="text-gold">*</span></label>
                   <select value={wsForm.level} onChange={(e) => setWsForm((f) => ({ ...f, level: e.target.value }))} className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm bg-transparent">

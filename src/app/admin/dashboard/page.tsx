@@ -58,14 +58,14 @@ export default async function DashboardPage() {
     n >= 1000 ? `₺${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}B` : `₺${n.toLocaleString("tr-TR")}`;
 
   return (
-    <div className="p-8 max-w-6xl space-y-8">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl space-y-6 lg:space-y-8">
       <div>
         <p className="font-label text-[#888480] text-[0.6rem] mb-1">Madame Shelda</p>
-        <h1 className="font-serif text-[#1a1a1a] text-3xl" style={{ fontStyle: "italic" }}>Dashboard</h1>
+        <h1 className="font-serif text-[#1a1a1a] text-2xl sm:text-3xl" style={{ fontStyle: "italic" }}>Dashboard</h1>
       </div>
 
       {/* ── KPI Kartları ── */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         <Link href="/admin/eserler" className="bg-white border border-sand p-5 hover:border-brown/30 transition-colors group">
           <div className="flex items-start justify-between mb-4">
             <ImageIcon size={18} className="text-gold" />
@@ -110,7 +110,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
         {/* Sipariş dağılımı */}
-        <div className="bg-white border border-sand p-6">
+        <div className="bg-white border border-sand p-4 sm:p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-label text-[#1a1a1a] text-[0.65rem]">Sipariş Durumu</h2>
             <Link href="/admin/basvurular" className="font-label text-gold text-[0.55rem] hover:text-brown transition-colors">Tümünü Gör →</Link>
@@ -148,7 +148,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Workshop kayıtları */}
-        <div className="bg-white border border-sand p-6">
+        <div className="bg-white border border-sand p-4 sm:p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-label text-[#1a1a1a] text-[0.65rem]">Workshop Başvuruları</h2>
             <Link href="/admin/basvurular" className="font-label text-gold text-[0.55rem] hover:text-brown transition-colors">Tümünü Gör →</Link>
@@ -191,7 +191,7 @@ export default async function DashboardPage() {
 
       {/* ── Son Siparişler ── */}
       <div className="bg-white border border-sand">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-sand">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-sand">
           <h2 className="font-label text-[#1a1a1a] text-[0.65rem]">Son Siparişler</h2>
           <Link href="/admin/basvurular" className="font-label text-gold text-[0.6rem] hover:text-brown transition-colors">
             Tümünü Gör →
@@ -201,7 +201,7 @@ export default async function DashboardPage() {
           {(recentOrders ?? []).length === 0 ? (
             <p className="px-6 py-8 font-label text-[#888480] text-[0.6rem] text-center">Henüz sipariş yok.</p>
           ) : (recentOrders ?? []).map((order) => (
-            <div key={order.id} className="flex items-center gap-4 px-6 py-4">
+            <div key={order.id} className="flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-4">
               <div className="w-8 h-8 bg-cream flex items-center justify-center shrink-0 border border-sand">
                 <ShoppingBag size={12} className="text-brown" />
               </div>
@@ -226,7 +226,7 @@ export default async function DashboardPage() {
       {/* ── Son Workshop Başvuruları ── */}
       {(recentRegistrations ?? []).length > 0 && (
         <div className="bg-white border border-sand">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-sand">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-sand">
             <h2 className="font-label text-[#1a1a1a] text-[0.65rem]">Son Workshop Başvuruları</h2>
             <Link href="/admin/basvurular" className="font-label text-gold text-[0.6rem] hover:text-brown transition-colors">
               Tümünü Gör →
@@ -234,7 +234,7 @@ export default async function DashboardPage() {
           </div>
           <div className="divide-y divide-sand">
             {(recentRegistrations ?? []).map((r) => (
-              <div key={r.id} className="flex items-center gap-4 px-6 py-4">
+              <div key={r.id} className="flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-4">
                 <div className="w-8 h-8 bg-cream flex items-center justify-center shrink-0 border border-sand">
                   <Users size={12} className="text-brown" />
                 </div>

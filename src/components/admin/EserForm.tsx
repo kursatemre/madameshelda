@@ -63,7 +63,6 @@ export default function EserForm({ initial, productId, categories: categoriesPro
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Yükleme hatası");
       setImageUrl(imageId, json.url);
-      toast.success("Görsel yüklendi.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Yükleme hatası");
     } finally {
@@ -71,10 +70,14 @@ export default function EserForm({ initial, productId, categories: categoriesPro
     }
   };
 
-  const handleNewFile = async (file: File) => {
-    const id = uid();
-    setForm((f) => ({ ...f, images: [...f.images, { id, url: "" }] }));
-    await uploadFile(id, file);
+  // Çoklu dosya seçimi — bir kerede birden çok fotoğraf yükler
+  const handleNewFiles = async (fileList: FileList) => {
+    const files = Array.from(fileList);
+    if (files.length === 0) return;
+    const rows = files.map((file) => ({ id: uid(), file }));
+    setForm((f) => ({ ...f, images: [...f.images, ...rows.map(({ id }) => ({ id, url: "" }))] }));
+    await Promise.all(rows.map(({ id, file }) => uploadFile(id, file)));
+    toast.success(files.length > 1 ? `${files.length} görsel yüklendi.` : "Görsel yüklendi.");
   };
 
   const set = <K extends keyof FormData>(k: K, v: FormData[K]) =>
@@ -152,28 +155,28 @@ export default function EserForm({ initial, productId, categories: categoriesPro
   return (
     <div className="min-h-screen bg-[#faf8f6]">
       {/* Top bar */}
-      <div className="bg-white border-b border-sand sticky top-0 z-10 px-8 py-4 flex items-center justify-between">
+      <div className="bg-white border-b border-sand sticky top-0 z-10 px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between gap-3">
         <Link
           href="/admin/eserler"
-          className="flex items-center gap-2 font-label text-[#888480] text-[0.6rem] hover:text-brown transition-colors group"
+          className="flex items-center gap-1.5 font-label text-[#888480] text-[0.6rem] hover:text-brown transition-colors group shrink-0"
         >
           <ArrowLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />
-          Eserler
+          <span className="hidden sm:inline">Eserler</span>
         </Link>
-        <h1 className="font-serif text-[#1a1a1a] text-xl absolute left-1/2 -translate-x-1/2" style={{ fontStyle: "italic" }}>
+        <h1 className="font-serif text-[#1a1a1a] text-base sm:text-xl truncate min-w-0" style={{ fontStyle: "italic" }}>
           {productId ? "Eseri Düzenle" : "Yeni Eser"}
         </h1>
         <button
           onClick={save}
           disabled={saving || !form.title || !form.slug}
-          className="bg-brown text-cream font-label text-[0.6rem] px-6 py-2.5 hover:bg-brown-light transition-colors disabled:opacity-50"
+          className="bg-brown text-cream font-label text-[0.55rem] sm:text-[0.6rem] px-3 sm:px-6 py-2.5 hover:bg-brown-light transition-colors disabled:opacity-50 shrink-0 whitespace-nowrap"
         >
           {saving ? "Kaydediliyor…" : productId ? "Güncelle" : "Yayınla"}
         </button>
       </div>
 
       {/* Content */}
-      <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* ── Sol sütun ── */}
         <div className="lg:col-span-2 space-y-5">
@@ -212,7 +215,7 @@ export default function EserForm({ initial, productId, categories: categoriesPro
                   placeholder="sonbahar-koleksiyonu"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label className="font-label text-[#888480] text-[0.55rem] block mb-2">
                     Kategori <span className="text-gold">*</span>
@@ -271,7 +274,7 @@ export default function EserForm({ initial, productId, categories: categoriesPro
                   placeholder="Eser hakkında detaylı açıklama…"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label className="font-label text-[#888480] text-[0.55rem] block mb-2">Boyutlar</label>
                   <input
@@ -304,15 +307,16 @@ export default function EserForm({ initial, productId, categories: categoriesPro
                 <Plus size={11} /> Ekle
               </button>
             </div>
-            {/* Hidden file inputs */}
+            {/* Hidden file inputs — çoklu seçim destekli */}
             <input
               ref={newFileRef}
               type="file"
               accept="image/*"
+              multiple
               className="hidden"
               onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) handleNewFile(f);
+                const files = e.target.files;
+                if (files && files.length > 0) handleNewFiles(files);
                 e.target.value = "";
               }}
             />
@@ -323,7 +327,7 @@ export default function EserForm({ initial, productId, categories: categoriesPro
                 onClick={() => newFileRef.current?.click()}
               >
                 <Upload size={20} className="text-sand-dark group-hover:text-brown/50 transition-colors" />
-                <span className="font-label text-[#888480] text-[0.6rem]">Dosya seç veya URL ekle</span>
+                <span className="font-label text-[#888480] text-[0.6rem] text-center px-4">Birden fazla fotoğraf birden seçebilirsiniz</span>
                 <div className="flex gap-3 mt-1">
                   <button
                     type="button"
@@ -506,7 +510,7 @@ export default function EserForm({ initial, productId, categories: categoriesPro
                       {/* Expanded editor */}
                       {activeVariant === v.id && (
                         <div className="px-4 pb-5 pt-2 border-t border-sand bg-[#fdfcfb]">
-                          <div className="grid grid-cols-2 gap-5">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
                               <label className="font-label text-[#888480] text-[0.5rem] block mb-2">Renk Adı</label>
                               <input

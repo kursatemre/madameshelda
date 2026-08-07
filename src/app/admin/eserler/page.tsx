@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Pencil, Trash2, Eye, X, Check, ToggleLeft, ToggleRight } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, ToggleLeft, ToggleRight } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { toSlug } from "@/data/products";
 
 type EserRow = {
   id: string;
@@ -20,28 +19,9 @@ type EserRow = {
   created_at: string;
 };
 
-type Category = { id: string; name: string; slug: string };
-
-const emptyForm = {
-  title: "",
-  slug: "",
-  category: "",
-  price: "",
-  description: "",
-  dimensions: "",
-  materials: "",
-  is_available: true,
-  is_featured: false,
-};
-
 export default function AdminEserlerPage() {
   const [eserler, setEserler] = useState<EserRow[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editTarget, setEditTarget] = useState<EserRow | null>(null);
-  const [form, setForm] = useState(emptyForm);
-  const [saving, setSaving] = useState(false);
 
   const fetchEserler = useCallback(async () => {
     setLoading(true);
@@ -58,74 +38,7 @@ export default function AdminEserlerPage() {
 
   useEffect(() => {
     fetchEserler();
-    fetch("/api/admin/categories").then((r) => r.json()).then((d) => { if (Array.isArray(d)) setCategories(d); }).catch(() => {});
   }, [fetchEserler]);
-
-  const openAdd = () => {
-    setEditTarget(null);
-    setForm(emptyForm);
-    setModalOpen(true);
-  };
-
-  const openEdit = (eser: EserRow) => {
-    setEditTarget(eser);
-    setForm({
-      title: eser.title,
-      slug: eser.slug,
-      category: eser.category ?? "",
-      price: eser.price?.toString() ?? "",
-      description: eser.description ?? "",
-      dimensions: eser.dimensions ?? "",
-      materials: eser.materials ?? "",
-      is_available: eser.is_available,
-      is_featured: eser.is_featured,
-    });
-    setModalOpen(true);
-  };
-
-  const handleTitleChange = (title: string) => {
-    setForm((f) => ({ ...f, title, slug: editTarget ? f.slug : toSlug(title) }));
-  };
-
-  const saveEser = async () => {
-    if (!form.title || !form.slug || !form.category) {
-      toast.error("Başlık, slug ve kategori zorunludur.");
-      return;
-    }
-    setSaving(true);
-    try {
-      const payload = {
-        title: form.title,
-        slug: form.slug,
-        category: form.category,
-        price: form.price ? parseFloat(form.price) : null,
-        description: form.description || null,
-        dimensions: form.dimensions || null,
-        materials: form.materials || null,
-        is_available: form.is_available,
-        is_featured: form.is_featured,
-      };
-
-      const url = editTarget ? `/api/admin/products/${editTarget.id}` : "/api/admin/products";
-      const method = editTarget ? "PATCH" : "POST";
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Hata");
-      }
-      toast.success(editTarget ? "Eser güncellendi." : "Eser eklendi.");
-      setModalOpen(false);
-      fetchEserler();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Bir hata oluştu.");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const toggleField = async (id: string, field: "is_available" | "is_featured", current: boolean) => {
     setEserler((prev) => prev.map((e) => e.id === id ? { ...e, [field]: !current } : e));
@@ -155,20 +68,21 @@ export default function AdminEserlerPage() {
   };
 
   return (
-    <div className="p-8 max-w-6xl">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
+      <div className="flex items-center justify-between mb-6 lg:mb-8 gap-3">
         <div>
           <p className="font-label text-[#888480] text-[0.6rem] mb-1">Yönetim</p>
-          <h1 className="font-serif text-[#1a1a1a] text-3xl" style={{ fontStyle: "italic" }}>
+          <h1 className="font-serif text-[#1a1a1a] text-2xl sm:text-3xl" style={{ fontStyle: "italic" }}>
             Eserler
           </h1>
         </div>
         <Link
           href="/admin/eserler/yeni"
-          className="inline-flex items-center gap-2 bg-brown text-white font-label px-5 py-3 hover:bg-brown-light transition-colors duration-200"
+          className="inline-flex items-center gap-2 bg-brown text-white font-label px-4 sm:px-5 py-3 hover:bg-brown-light transition-colors duration-200 shrink-0"
         >
           <Plus size={14} />
-          Yeni Eser
+          <span className="hidden sm:inline">Yeni Eser</span>
+          <span className="sm:hidden">Ekle</span>
         </Link>
       </div>
 
@@ -179,260 +93,154 @@ export default function AdminEserlerPage() {
           <p className="font-serif text-brown/40 text-xl mb-4" style={{ fontStyle: "italic" }}>
             Henüz eser eklenmedi.
           </p>
-          <button onClick={openAdd} className="font-label text-gold text-[0.6rem] hover:text-brown transition-colors">
+          <Link href="/admin/eserler/yeni" className="font-label text-gold text-[0.6rem] hover:text-brown transition-colors">
             İlk eseri ekle →
-          </button>
+          </Link>
         </div>
       ) : (
-        <div className="bg-white border border-sand overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-sand bg-cream-dark">
-                  <th className="text-left px-5 py-3.5 font-label text-[#888480] text-[0.6rem]">Eser</th>
-                  <th className="text-left px-5 py-3.5 font-label text-[#888480] text-[0.6rem]">Kategori</th>
-                  <th className="text-left px-5 py-3.5 font-label text-[#888480] text-[0.6rem]">Fiyat</th>
-                  <th className="text-center px-5 py-3.5 font-label text-[#888480] text-[0.6rem]">Öne Çıkan</th>
-                  <th className="text-center px-5 py-3.5 font-label text-[#888480] text-[0.6rem]">Durum</th>
-                  <th className="text-right px-5 py-3.5 font-label text-[#888480] text-[0.6rem]">İşlemler</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-sand">
-                {eserler.map((eser) => (
-                  <tr key={eser.id} className="hover:bg-sand-light/30 transition-colors">
-                    <td className="px-5 py-4">
-                      <p className="font-label text-[#1a1a1a] text-[0.65rem]">{eser.title}</p>
-                      <p className="font-label text-[#888480] text-[0.55rem]">/{eser.slug}</p>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className="font-label text-[0.55rem] border border-sand px-2.5 py-1 text-[#888480]">
-                        {eser.category || "—"}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className="font-serif text-[#1a1a1a] text-base" style={{ fontStyle: "italic" }}>
-                        {eser.price != null ? `₺${eser.price.toLocaleString("tr-TR")}` : "—"}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-center">
-                      <button
-                        onClick={() => toggleField(eser.id, "is_featured", eser.is_featured)}
-                        className="inline-flex items-center justify-center text-[#888480] hover:text-gold transition-colors"
-                        title={eser.is_featured ? "Öne çıkarmayı kaldır" : "Öne çıkar"}
-                      >
-                        {eser.is_featured
-                          ? <ToggleRight size={20} className="text-gold" />
-                          : <ToggleLeft size={20} />
-                        }
-                      </button>
-                    </td>
-                    <td className="px-5 py-4 text-center">
-                      <button
-                        onClick={() => toggleField(eser.id, "is_available", eser.is_available)}
-                        className={`font-label text-[0.55rem] px-2.5 py-1 transition-colors ${
-                          eser.is_available ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
-                        }`}
-                      >
-                        {eser.is_available ? "Aktif" : "Tükendi"}
-                      </button>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/eser/${eser.slug}`}
-                          target="_blank"
-                          className="p-1.5 text-[#888480] hover:text-brown transition-colors"
-                          title="Önizle"
-                        >
-                          <Eye size={14} />
-                        </Link>
-                        <Link
-                          href={`/admin/eserler/${eser.id}/duzenle`}
-                          className="p-1.5 text-[#888480] hover:text-brown transition-colors"
-                          title="Düzenle"
-                        >
-                          <Pencil size={14} />
-                        </Link>
-                        <button
-                          onClick={() => deleteEser(eser.id, eser.title)}
-                          className="p-1.5 text-[#888480] hover:text-red-500 transition-colors"
-                          title="Sil"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <>
+          {/* Mobil — kart listesi (sm altı) */}
+          <div className="sm:hidden space-y-3">
+            {eserler.map((eser) => (
+              <div key={eser.id} className="bg-white border border-sand p-4">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="min-w-0">
+                    <p className="font-label text-[#1a1a1a] text-[0.65rem] truncate">{eser.title}</p>
+                    <p className="font-label text-[#888480] text-[0.55rem] mt-0.5">/{eser.slug}</p>
+                  </div>
+                  <span className="font-serif text-brown text-base shrink-0" style={{ fontStyle: "italic" }}>
+                    {eser.price != null ? `₺${eser.price.toLocaleString("tr-TR")}` : "—"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap mb-3">
+                  <span className="font-label text-[0.5rem] border border-sand px-2 py-1 text-[#888480]">
+                    {eser.category || "—"}
+                  </span>
+                  <button
+                    onClick={() => toggleField(eser.id, "is_available", eser.is_available)}
+                    className={`font-label text-[0.5rem] px-2 py-1 transition-colors ${
+                      eser.is_available ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
+                    }`}
+                  >
+                    {eser.is_available ? "Aktif" : "Tükendi"}
+                  </button>
+                  <button
+                    onClick={() => toggleField(eser.id, "is_featured", eser.is_featured)}
+                    className="inline-flex items-center gap-1 font-label text-[0.5rem] px-2 py-1 border border-sand text-[#888480] transition-colors"
+                  >
+                    {eser.is_featured
+                      ? <ToggleRight size={13} className="text-gold" />
+                      : <ToggleLeft size={13} />
+                    }
+                    Öne Çıkan
+                  </button>
+                </div>
+                <div className="flex items-center justify-end gap-1 pt-2 border-t border-sand">
+                  <Link href={`/eser/${eser.slug}`} target="_blank" className="p-2.5 text-[#888480] hover:text-brown transition-colors" title="Önizle">
+                    <Eye size={16} />
+                  </Link>
+                  <Link href={`/admin/eserler/${eser.id}/duzenle`} className="p-2.5 text-[#888480] hover:text-brown transition-colors" title="Düzenle">
+                    <Pencil size={16} />
+                  </Link>
+                  <button onClick={() => deleteEser(eser.id, eser.title)} className="p-2.5 text-[#888480] hover:text-red-500 transition-colors" title="Sil">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+
+          {/* Masaüstü — tablo (sm ve üstü) */}
+          <div className="hidden sm:block bg-white border border-sand overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-sand bg-cream-dark">
+                    <th className="text-left px-5 py-3.5 font-label text-[#888480] text-[0.6rem]">Eser</th>
+                    <th className="text-left px-5 py-3.5 font-label text-[#888480] text-[0.6rem]">Kategori</th>
+                    <th className="text-left px-5 py-3.5 font-label text-[#888480] text-[0.6rem]">Fiyat</th>
+                    <th className="text-center px-5 py-3.5 font-label text-[#888480] text-[0.6rem]">Öne Çıkan</th>
+                    <th className="text-center px-5 py-3.5 font-label text-[#888480] text-[0.6rem]">Durum</th>
+                    <th className="text-right px-5 py-3.5 font-label text-[#888480] text-[0.6rem]">İşlemler</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-sand">
+                  {eserler.map((eser) => (
+                    <tr key={eser.id} className="hover:bg-sand-light/30 transition-colors">
+                      <td className="px-5 py-4">
+                        <p className="font-label text-[#1a1a1a] text-[0.65rem]">{eser.title}</p>
+                        <p className="font-label text-[#888480] text-[0.55rem]">/{eser.slug}</p>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className="font-label text-[0.55rem] border border-sand px-2.5 py-1 text-[#888480]">
+                          {eser.category || "—"}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className="font-serif text-[#1a1a1a] text-base" style={{ fontStyle: "italic" }}>
+                          {eser.price != null ? `₺${eser.price.toLocaleString("tr-TR")}` : "—"}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-center">
+                        <button
+                          onClick={() => toggleField(eser.id, "is_featured", eser.is_featured)}
+                          className="inline-flex items-center justify-center text-[#888480] hover:text-gold transition-colors"
+                          title={eser.is_featured ? "Öne çıkarmayı kaldır" : "Öne çıkar"}
+                        >
+                          {eser.is_featured
+                            ? <ToggleRight size={20} className="text-gold" />
+                            : <ToggleLeft size={20} />
+                          }
+                        </button>
+                      </td>
+                      <td className="px-5 py-4 text-center">
+                        <button
+                          onClick={() => toggleField(eser.id, "is_available", eser.is_available)}
+                          className={`font-label text-[0.55rem] px-2.5 py-1 transition-colors ${
+                            eser.is_available ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
+                          }`}
+                        >
+                          {eser.is_available ? "Aktif" : "Tükendi"}
+                        </button>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link
+                            href={`/eser/${eser.slug}`}
+                            target="_blank"
+                            className="p-1.5 text-[#888480] hover:text-brown transition-colors"
+                            title="Önizle"
+                          >
+                            <Eye size={14} />
+                          </Link>
+                          <Link
+                            href={`/admin/eserler/${eser.id}/duzenle`}
+                            className="p-1.5 text-[#888480] hover:text-brown transition-colors"
+                            title="Düzenle"
+                          >
+                            <Pencil size={14} />
+                          </Link>
+                          <button
+                            onClick={() => deleteEser(eser.id, eser.title)}
+                            className="p-1.5 text-[#888480] hover:text-red-500 transition-colors"
+                            title="Sil"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
       )}
 
       <p className="font-label text-[#888480] text-[0.55rem] mt-4">
         Toplam {eserler.length} eser
       </p>
-
-      {/* Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-sand">
-              <h2 className="font-label text-[#1a1a1a] text-[0.7rem]">
-                {editTarget ? "Eseri Düzenle" : "Yeni Eser Ekle"}
-              </h2>
-              <button onClick={() => setModalOpen(false)} className="text-[#888480] hover:text-brown transition-colors">
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-5">
-              <div>
-                <label className="font-label text-[#888480] text-[0.55rem] block mb-2">
-                  Başlık <span className="text-gold">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={form.title}
-                  onChange={(e) => handleTitleChange(e.target.value)}
-                  className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm"
-                  placeholder="Sonbahar Koleksiyonu"
-                  autoFocus
-                />
-              </div>
-
-              <div>
-                <label className="font-label text-[#888480] text-[0.55rem] block mb-2">
-                  Slug <span className="text-gold">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={form.slug}
-                  onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
-                  className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm"
-                  placeholder="sonbahar-koleksiyonu"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="font-label text-[#888480] text-[0.55rem] block mb-2">
-                    Kategori <span className="text-gold">*</span>
-                  </label>
-                  {categories.length > 0 ? (
-                    <select
-                      value={form.category}
-                      onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                      className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm bg-transparent"
-                    >
-                      <option value="">— Seçiniz —</option>
-                      {categories.map((c) => (
-                        <option key={c.id} value={c.name}>{c.name}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type="text"
-                      value={form.category}
-                      onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                      className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm"
-                      placeholder="Kategori adı"
-                    />
-                  )}
-                </div>
-                <div>
-                  <label className="font-label text-[#888480] text-[0.55rem] block mb-2">Fiyat (₺)</label>
-                  <input
-                    type="number"
-                    value={form.price}
-                    onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-                    className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm"
-                    placeholder="2400"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="font-label text-[#888480] text-[0.55rem] block mb-2">Açıklama</label>
-                <textarea
-                  value={form.description}
-                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                  className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm resize-none"
-                  rows={3}
-                  placeholder="Eser açıklaması…"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="font-label text-[#888480] text-[0.55rem] block mb-2">Boyutlar</label>
-                  <input
-                    type="text"
-                    value={form.dimensions}
-                    onChange={(e) => setForm((f) => ({ ...f, dimensions: e.target.value }))}
-                    className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm"
-                    placeholder="50×70 cm"
-                  />
-                </div>
-                <div>
-                  <label className="font-label text-[#888480] text-[0.55rem] block mb-2">Malzeme</label>
-                  <input
-                    type="text"
-                    value={form.materials}
-                    onChange={(e) => setForm((f) => ({ ...f, materials: e.target.value }))}
-                    className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm"
-                    placeholder="Kurutulmuş çiçekler"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-6 pt-2">
-                <label className="flex items-center gap-2.5 cursor-pointer">
-                  <button
-                    type="button"
-                    onClick={() => setForm((f) => ({ ...f, is_available: !f.is_available }))}
-                    className={`w-10 h-5 rounded-full transition-colors relative ${form.is_available ? "bg-green-500" : "bg-gray-200"}`}
-                  >
-                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.is_available ? "translate-x-5" : "translate-x-0.5"}`} />
-                  </button>
-                  <span className="font-label text-[#888480] text-[0.6rem]">Aktif (Satışta)</span>
-                </label>
-                <label className="flex items-center gap-2.5 cursor-pointer">
-                  <button
-                    type="button"
-                    onClick={() => setForm((f) => ({ ...f, is_featured: !f.is_featured }))}
-                    className={`w-10 h-5 rounded-full transition-colors relative ${form.is_featured ? "bg-gold" : "bg-gray-200"}`}
-                  >
-                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.is_featured ? "translate-x-5" : "translate-x-0.5"}`} />
-                  </button>
-                  <span className="font-label text-[#888480] text-[0.6rem]">Öne Çıkan</span>
-                </label>
-              </div>
-
-              <div className="flex gap-3 pt-2 border-t border-sand">
-                <button
-                  onClick={() => setModalOpen(false)}
-                  className="flex-1 border border-sand font-label text-[#888480] text-[0.6rem] py-3 hover:border-brown/40 transition-colors"
-                >
-                  İptal
-                </button>
-                <button
-                  onClick={saveEser}
-                  disabled={saving || !form.title || !form.slug}
-                  className="flex-1 bg-brown text-cream font-label text-[0.6rem] py-3 hover:bg-brown-light transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {saving ? (
-                    "Kaydediliyor…"
-                  ) : (
-                    <><Check size={12} /> {editTarget ? "Güncelle" : "Ekle"}</>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -81,11 +81,11 @@ export default function KategorilerPage() {
   };
 
   return (
-    <div className="p-8 max-w-2xl">
-      <div className="flex items-start justify-between mb-8">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-2xl">
+      <div className="flex items-start justify-between mb-6 lg:mb-8 gap-3">
         <div>
           <p className="font-label text-[#888480] text-[0.6rem] mb-1">Yönetim</p>
-          <h1 className="font-serif text-[#1a1a1a] text-3xl" style={{ fontStyle: "italic" }}>
+          <h1 className="font-serif text-[#1a1a1a] text-2xl sm:text-3xl" style={{ fontStyle: "italic" }}>
             Kategoriler
           </h1>
         </div>

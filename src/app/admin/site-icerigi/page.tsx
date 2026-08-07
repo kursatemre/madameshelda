@@ -84,11 +84,11 @@ export default function SiteIcerigiPage() {
     });
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl">
       {/* Header */}
       <div className="mb-6">
         <p className="font-label text-[#888480] text-[0.6rem] mb-1">Yönetim</p>
-        <h1 className="font-serif text-[#1a1a1a] text-3xl" style={{ fontStyle: "italic" }}>
+        <h1 className="font-serif text-[#1a1a1a] text-2xl sm:text-3xl" style={{ fontStyle: "italic" }}>
           Site İçeriği
         </h1>
         <p className="font-label text-[#888480] text-[0.6rem] mt-2 normal-case leading-relaxed">
@@ -98,12 +98,12 @@ export default function SiteIcerigiPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-sand mb-8">
+      <div className="flex border-b border-sand mb-8 overflow-x-auto">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`font-label text-[0.6rem] px-5 py-3 border-b-2 transition-colors ${
+            className={`font-label text-[0.6rem] px-3 sm:px-5 py-3 border-b-2 transition-colors whitespace-nowrap shrink-0 ${
               tab === t ? "border-brown text-brown" : "border-transparent text-[#888480] hover:text-brown/60"
             }`}
           >
@@ -120,22 +120,22 @@ export default function SiteIcerigiPage() {
           {tab === "genel" && (
             <SectionCard title="Genel Ayarlar" onSave={() => save("general")} saving={savingKey === "general"}>
               <FieldGroup label="İletişim Bilgileri">
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <TextField label="Telefon" value={content.general.phone} onChange={(v) => update("general", { phone: v })} placeholder="+90 500 123 45 67" />
                   <TextField label="WhatsApp Numarası" value={content.general.whatsapp_number} onChange={(v) => update("general", { whatsapp_number: v })} placeholder="905001234567" hint="Ülke koduyla, boşluksuz" />
                 </div>
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <TextField label="E-posta" value={content.general.email} onChange={(v) => update("general", { email: v })} placeholder="info@madameshelda.com" />
                   <TextField label="Adres" value={content.general.address} onChange={(v) => update("general", { address: v })} placeholder="Soma, Manisa, Türkiye" />
                 </div>
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <TextField label="Instagram Kullanıcı Adı" value={content.general.instagram_handle} onChange={(v) => update("general", { instagram_handle: v })} placeholder="@madameshelda" />
                   <TextField label="Instagram URL" value={content.general.instagram_url} onChange={(v) => update("general", { instagram_url: v })} placeholder="https://instagram.com/madameshelda" />
                 </div>
               </FieldGroup>
 
               <FieldGroup label="Banka Bilgileri (Havale ile Ödeme)">
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <TextField label="Banka Adı" value={content.general.bank_name} onChange={(v) => update("general", { bank_name: v })} placeholder="Ziraat Bankası" />
                   <TextField label="Hesap Sahibi" value={content.general.bank_account_holder} onChange={(v) => update("general", { bank_account_holder: v })} placeholder="Madame Shelda" />
                 </div>
@@ -144,11 +144,11 @@ export default function SiteIcerigiPage() {
 
               <FieldGroup label="Footer & Logo">
                 <TextAreaField label="Footer Tanıtım Metni" value={content.general.footer_tagline} onChange={(v) => update("general", { footer_tagline: v })} rows={2} />
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <TextField label="Telif Metni" value={content.general.footer_copyright} onChange={(v) => update("general", { footer_copyright: v })} hint="Yıl otomatik eklenir" />
                   <TextField label="Geliştirici Notu" value={content.general.footer_credit} onChange={(v) => update("general", { footer_credit: v })} />
                 </div>
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <ImageUploadRow
                     id="logo-light"
                     label="Logo (Açık zeminde / şeffaf header)"
@@ -177,17 +177,17 @@ export default function SiteIcerigiPage() {
             <div className="space-y-5">
               <SectionCard title="Hero (Üst Bölüm)" onSave={() => save("home_hero")} saving={savingKey === "home_hero"}>
                 <TextField label="Üst Etiket" value={content.home_hero.eyebrow} onChange={(v) => update("home_hero", { eyebrow: v })} />
-                <div className="grid grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                   <TextField label="Başlık 1. Satır" value={content.home_hero.title_line1} onChange={(v) => update("home_hero", { title_line1: v })} />
                   <TextField label="Başlık 2. Satır" value={content.home_hero.title_line2} onChange={(v) => update("home_hero", { title_line2: v })} />
                   <TextField label="Başlık 3. Satır" value={content.home_hero.title_line3} onChange={(v) => update("home_hero", { title_line3: v })} />
                 </div>
                 <TextAreaField label="Açıklama" value={content.home_hero.description} onChange={(v) => update("home_hero", { description: v })} rows={2} />
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <TextField label="Birincil Buton" value={content.home_hero.cta_primary_label} onChange={(v) => update("home_hero", { cta_primary_label: v })} />
                   <TextField label="İkincil Buton" value={content.home_hero.cta_secondary_label} onChange={(v) => update("home_hero", { cta_secondary_label: v })} />
                 </div>
-                <div className="grid grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                   <TextField label="İstatistik Etiketi" value={content.home_hero.stat_eyebrow} onChange={(v) => update("home_hero", { stat_eyebrow: v })} placeholder="Bu yıl" />
                   <TextField label="İstatistik Değeri" value={content.home_hero.stat_value} onChange={(v) => update("home_hero", { stat_value: v })} placeholder="120+" />
                   <TextField label="İstatistik Açıklaması" value={content.home_hero.stat_label} onChange={(v) => update("home_hero", { stat_label: v })} placeholder="Tamamlanan Eser" />
@@ -209,7 +209,7 @@ export default function SiteIcerigiPage() {
                   Kartların kendisi Eserler&apos;de &quot;Öne Çıkan&quot; işaretlenen ürünlerden otomatik gelir.
                 </p>
                 <TextField label="Üst Etiket" value={content.home_featured.eyebrow} onChange={(v) => update("home_featured", { eyebrow: v })} />
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <TextField label="Başlık 1. Satır" value={content.home_featured.title_line1} onChange={(v) => update("home_featured", { title_line1: v })} />
                   <TextField label="Başlık 2. Satır" value={content.home_featured.title_line2} onChange={(v) => update("home_featured", { title_line2: v })} />
                 </div>
@@ -220,7 +220,7 @@ export default function SiteIcerigiPage() {
                   Kartlar Workshoplar&apos;daki aktif workshoplardan otomatik gelir.
                 </p>
                 <TextField label="Üst Etiket" value={content.home_workshop_teaser.eyebrow} onChange={(v) => update("home_workshop_teaser", { eyebrow: v })} />
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <TextField label="Başlık 1. Satır" value={content.home_workshop_teaser.title_line1} onChange={(v) => update("home_workshop_teaser", { title_line1: v })} />
                   <TextField label="Başlık 2. Satır" value={content.home_workshop_teaser.title_line2} onChange={(v) => update("home_workshop_teaser", { title_line2: v })} />
                 </div>
@@ -228,20 +228,20 @@ export default function SiteIcerigiPage() {
 
               <SectionCard title="CTA Banner (Özel Sipariş)" onSave={() => save("home_cta")} saving={savingKey === "home_cta"}>
                 <TextField label="Üst Etiket" value={content.home_cta.eyebrow} onChange={(v) => update("home_cta", { eyebrow: v })} />
-                <div className="grid grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                   <TextField label="Başlık 1. Satır" value={content.home_cta.title_line1} onChange={(v) => update("home_cta", { title_line1: v })} />
                   <TextField label="Başlık 2. Satır" value={content.home_cta.title_line2} onChange={(v) => update("home_cta", { title_line2: v })} />
                   <TextField label="Başlık 3. Satır" value={content.home_cta.title_line3} onChange={(v) => update("home_cta", { title_line3: v })} />
                 </div>
                 <TextAreaField label="Açıklama" value={content.home_cta.description} onChange={(v) => update("home_cta", { description: v })} rows={2} />
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <TextField label="Birincil Buton" value={content.home_cta.cta_primary_label} onChange={(v) => update("home_cta", { cta_primary_label: v })} />
                   <TextField label="İkincil Buton" value={content.home_cta.cta_secondary_label} onChange={(v) => update("home_cta", { cta_secondary_label: v })} />
                 </div>
                 <FieldGroup label="İstatistikler">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {content.home_cta.stats.map((s, i) => (
-                      <div key={i} className="grid grid-cols-2 gap-3 border border-sand p-3">
+                      <div key={i} className="grid grid-cols-1 sm:grid-cols-2 gap-3 border border-sand p-3">
                         <TextField label={`Değer ${i + 1}`} value={s.value} onChange={(v) => updateStat(i, { value: v })} placeholder="120+" />
                         <TextField label={`Etiket ${i + 1}`} value={s.label} onChange={(v) => updateStat(i, { label: v })} placeholder="Tamamlanan Eser" />
                       </div>
@@ -257,7 +257,7 @@ export default function SiteIcerigiPage() {
             <div className="space-y-5">
               <SectionCard title="Hero (Üst Bölüm)" onSave={() => save("about_hero")} saving={savingKey === "about_hero"}>
                 <TextField label="Üst Etiket" value={content.about_hero.eyebrow} onChange={(v) => update("about_hero", { eyebrow: v })} />
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <TextField label="Başlık 1. Satır" value={content.about_hero.title_line1} onChange={(v) => update("about_hero", { title_line1: v })} />
                   <TextField label="Başlık 2. Satır" value={content.about_hero.title_line2} onChange={(v) => update("about_hero", { title_line2: v })} />
                 </div>
@@ -285,14 +285,14 @@ export default function SiteIcerigiPage() {
 
               <SectionCard title="Hikayemiz" onSave={() => save("about_story")} saving={savingKey === "about_story"}>
                 <TextField label="Üst Etiket" value={content.about_story.eyebrow} onChange={(v) => update("about_story", { eyebrow: v })} />
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <TextField label="Başlık 1. Satır" value={content.about_story.title_line1} onChange={(v) => update("about_story", { title_line1: v })} />
                   <TextField label="Başlık 2. Satır" value={content.about_story.title_line2} onChange={(v) => update("about_story", { title_line2: v })} />
                 </div>
                 <TextAreaField label="1. Paragraf" value={content.about_story.paragraph1} onChange={(v) => update("about_story", { paragraph1: v })} rows={3} />
                 <TextAreaField label="2. Paragraf" value={content.about_story.paragraph2} onChange={(v) => update("about_story", { paragraph2: v })} rows={3} />
                 <TextAreaField label="Alıntı" value={content.about_story.quote} onChange={(v) => update("about_story", { quote: v })} rows={2} />
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <TextField label="Alıntı İmzası" value={content.about_story.quote_attribution} onChange={(v) => update("about_story", { quote_attribution: v })} />
                   <TextField label="Buton Metni" value={content.about_story.cta_label} onChange={(v) => update("about_story", { cta_label: v })} />
                 </div>
@@ -317,7 +317,7 @@ export default function SiteIcerigiPage() {
                 Telefon, e-posta, adres ve Instagram bilgileri &quot;Genel&quot; sekmesinden yönetilir.
               </p>
               <TextField label="Üst Etiket" value={content.contact_page.eyebrow} onChange={(v) => update("contact_page", { eyebrow: v })} />
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <TextField label="Başlık 1. Satır" value={content.contact_page.title_line1} onChange={(v) => update("contact_page", { title_line1: v })} />
                 <TextField label="Başlık 2. Satır" value={content.contact_page.title_line2} onChange={(v) => update("contact_page", { title_line2: v })} />
               </div>
