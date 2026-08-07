@@ -118,21 +118,8 @@ export function Hero({ content }: { content: HomeHeroContent }) {
         </div>
       </div>
 
-      {/* Alt şerit — istatistik kartı + kaydırma ipucu */}
-      <div className="relative z-10 flex items-end justify-between gap-6 px-6 lg:px-12 pb-10 lg:pb-12">
-        <div className="bg-cream/10 backdrop-blur-md border border-cream/20 px-5 py-4 lg:px-6 lg:py-5">
-          <p className="font-label text-gold text-[0.55rem] mb-2">{content.stat_eyebrow}</p>
-          <p
-            className="font-serif text-cream text-3xl lg:text-4xl mb-1"
-            style={{ fontStyle: "italic" }}
-          >
-            {content.stat_value}
-          </p>
-          <p className="font-label text-cream/70 text-[0.6rem]">
-            {content.stat_label}
-          </p>
-        </div>
-
+      {/* Alt şerit — kaydırma ipucu; arkaplan görseli buradan itibaren serbest kalsın diye kart kaldırıldı */}
+      <div className="relative z-10 flex justify-end px-6 lg:px-12 pb-10 lg:pb-12">
         <div className="hidden sm:flex flex-col items-center gap-2 text-cream/45">
           <span className="font-label text-[0.55rem] tracking-[0.2em]">Kaydır</span>
           <span className="w-px h-10 bg-cream/30" />
