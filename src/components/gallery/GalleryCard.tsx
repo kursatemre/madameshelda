@@ -39,12 +39,12 @@ export function GalleryCard({ product }: { product: Product }) {
       {/* Görsel */}
       <Link href={`/eser/${product.slug}`} className="block relative overflow-hidden">
         <div
-          className="h-56 relative transition-transform duration-500 group-hover:scale-[1.03]"
+          className="aspect-[2/3] relative transition-transform duration-500 group-hover:scale-[1.03]"
           style={isImage ? {} : { background: product.bg }}
         >
           {isImage ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={visual} alt={product.title} className="w-full h-full object-cover" />
+            <img src={visual} alt={product.title} className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <svg className="absolute inset-0 w-full h-full opacity-25" viewBox="0 0 400 280" fill="none" preserveAspectRatio="xMidYMid slice">
               {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
