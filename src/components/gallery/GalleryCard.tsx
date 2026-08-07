@@ -9,13 +9,13 @@ import type { Product } from "@/data/products";
 export function GalleryCard({ product }: { product: Product }) {
   const { add, items } = useCart();
   const variants = product.variants ?? [];
-  const availableVariant = variants.find((v) => v.available) ?? null;
 
   // Cart key: if product has variants, require user to pick one on detail page
   const inCart = items.some((i) => i.id === product.id || i.id.startsWith(`${product.id}_`));
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!product.available) return;
 
     if (variants.length > 0) {
@@ -35,11 +35,11 @@ export function GalleryCard({ product }: { product: Product }) {
   const isImage = visual.startsWith("http") || visual.startsWith("/");
 
   return (
-    <div className="group flex flex-col bg-white border border-sand hover:border-gold/40 transition-all duration-300 overflow-hidden">
-      {/* Görsel */}
-      <Link href={`/eser/${product.slug}`} className="block relative overflow-hidden">
+    <div className="group relative aspect-[2/3] bg-white border border-sand hover:border-gold/40 transition-all duration-300 overflow-hidden">
+      {/* Tüm kartı kaplayan tıklanabilir alan (görsel + zemin) */}
+      <Link href={`/eser/${product.slug}`} className="absolute inset-0 z-0" aria-label={product.title}>
         <div
-          className="aspect-[2/3] relative transition-transform duration-500 group-hover:scale-[1.03]"
+          className="absolute inset-0 transition-transform duration-500 group-hover:scale-[1.03]"
           style={isImage ? {} : { background: product.bg }}
         >
           {isImage ? (
@@ -53,80 +53,69 @@ export function GalleryCard({ product }: { product: Product }) {
               <circle cx="200" cy="140" r="22" fill="#a07850" />
             </svg>
           )}
-
-          {/* Badges */}
-          <div className="absolute top-3 left-3 flex gap-1.5">
-            <span className="font-label text-[0.5rem] bg-cream/90 text-brown px-2 py-1">
-              {product.category}
-            </span>
-            {!product.available && (
-              <span className="font-label text-[0.5rem] bg-brown text-cream px-2 py-1">Tükendi</span>
-            )}
-            {product.featured && product.available && (
-              <span className="font-label text-[0.5rem] bg-gold text-cream px-2 py-1">Öne Çıkan</span>
-            )}
-          </div>
-
-          {/* Hover overlay */}
-          <div className="absolute inset-0 bg-brown/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-            <span className="flex items-center gap-2 font-label text-cream text-[0.6rem] border border-cream/40 px-4 py-2">
-              <Eye size={12} /> İncele
-            </span>
-          </div>
         </div>
       </Link>
 
-      {/* Bilgi */}
-      <div className="p-4 flex flex-col gap-3">
-        <Link href={`/eser/${product.slug}`}>
-          <h3 className="font-serif text-[#1a1a1a] text-lg leading-tight hover:text-brown transition-colors duration-200" style={{ fontStyle: "italic" }}>
-            {product.title}
-          </h3>
-        </Link>
+      {/* Üst rozetler */}
+      <div className="absolute top-3 left-3 z-10 flex gap-1.5 pointer-events-none">
+        <span className="font-label text-[0.5rem] bg-cream/90 text-brown px-2 py-1">
+          {product.category}
+        </span>
+        {!product.available && (
+          <span className="font-label text-[0.5rem] bg-brown text-cream px-2 py-1">Tükendi</span>
+        )}
+        {product.featured && product.available && (
+          <span className="font-label text-[0.5rem] bg-gold text-cream px-2 py-1">Öne Çıkan</span>
+        )}
+      </div>
+
+      {/* Alt bilgi — isim, fiyat, sepete ekle; görselin üzerinde */}
+      <div className="absolute inset-x-0 bottom-0 z-10 p-4 pt-16 bg-gradient-to-t from-black/85 via-black/45 to-transparent pointer-events-none">
+        <h3
+          className="font-serif text-cream text-lg leading-tight mb-2"
+          style={{ fontStyle: "italic" }}
+        >
+          {product.title}
+        </h3>
 
         {/* Renk swatches */}
         {variants.length > 0 && (
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap mb-3">
             {variants.slice(0, 6).map((v) => (
               <div
                 key={v.id}
-                className={`w-4 h-4 rounded-full border border-black/10 ${!v.available ? "opacity-40" : ""}`}
+                className={`w-3.5 h-3.5 rounded-full border border-cream/50 ${!v.available ? "opacity-40" : ""}`}
                 style={{ background: v.hex }}
                 title={v.name}
               />
             ))}
             {variants.length > 6 && (
-              <span className="font-label text-[#888480] text-[0.5rem]">+{variants.length - 6}</span>
+              <span className="font-label text-cream/70 text-[0.5rem]">+{variants.length - 6}</span>
             )}
           </div>
         )}
 
-        <div className="flex items-center justify-between mt-auto">
-          <div>
-            <p className="font-label text-gold/60 text-[0.5rem] mb-0.5">Fiyat</p>
-            <p className="font-serif text-brown text-xl" style={{ fontStyle: "italic" }}>
-              ₺{product.price.toLocaleString("tr-TR")}
-            </p>
-          </div>
+        <div className="flex items-center justify-between gap-2">
+          <p className="font-serif text-cream text-xl" style={{ fontStyle: "italic" }}>
+            ₺{product.price.toLocaleString("tr-TR")}
+          </p>
 
           {variants.length > 0 ? (
-            <Link
-              href={`/eser/${product.slug}`}
-              className="flex items-center gap-1.5 font-label text-[0.6rem] px-4 py-2.5 bg-brown text-cream hover:bg-brown-light transition-all duration-200"
-            >
+            // Kart zaten tamamen tıklanabilir (üründe renk seçimi detay sayfasında yapılır) — dekoratif etiket
+            <span className="pointer-events-none flex items-center gap-1.5 font-label text-[0.6rem] px-4 py-2.5 bg-cream text-brown">
               <Eye size={12} />
               Renk Seç
-            </Link>
+            </span>
           ) : (
             <button
               onClick={handleAdd}
               disabled={!product.available}
-              className={`flex items-center gap-1.5 font-label text-[0.6rem] px-4 py-2.5 transition-all duration-200 ${
+              className={`pointer-events-auto flex items-center gap-1.5 font-label text-[0.6rem] px-4 py-2.5 transition-all duration-200 ${
                 !product.available
-                  ? "bg-sand text-[#888480] cursor-not-allowed"
+                  ? "bg-cream/50 text-brown/40 cursor-not-allowed"
                   : inCart
-                  ? "bg-green-50 text-green-700"
-                  : "bg-brown text-cream hover:bg-brown-light"
+                  ? "bg-cream text-green-700"
+                  : "bg-cream text-brown hover:bg-white"
               }`}
             >
               <ShoppingBag size={12} />
