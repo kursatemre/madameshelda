@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ShoppingBag } from "lucide-react";
 import { MobileNav } from "./MobileNav";
 import { useCart } from "@/contexts/CartContext";
@@ -14,9 +15,17 @@ const navLinks = [
   { href: "/iletisim", label: "İletişim" },
 ];
 
+// Sayfa en üstündeyken arkasında koyu/görselli bir hero olan sayfalar —
+// sadece bu sayfalarda header şeffaf + açık renk (cream) ikonlarla başlar.
+// Diğer tüm sayfaların üst bölümü açık renkli olduğundan header orada hep
+// katı arka plan + koyu (brown) ikonlarla gösterilir, aksi halde cream
+// ikonlar açık arka plan üzerinde görünmez hale gelir.
+const DARK_HERO_PATHS = ["/", "/workshoplar"];
+
 export function Header({ general }: { general: GeneralContent }) {
   const [scrolled, setScrolled] = useState(false);
   const { count, setIsOpen } = useCart();
+  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
@@ -25,15 +34,16 @@ export function Header({ general }: { general: GeneralContent }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const transparent = !scrolled;
-  const logoSrc = scrolled ? general.logo_dark_url : general.logo_url;
+  const hasDarkHero = DARK_HERO_PATHS.includes(pathname);
+  const transparent = hasDarkHero && !scrolled;
+  const logoSrc = transparent ? general.logo_url : general.logo_dark_url;
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? "bg-cream/95 backdrop-blur-sm border-b border-sand shadow-sm"
-          : "bg-transparent"
+        transparent
+          ? "bg-transparent"
+          : "bg-cream/95 backdrop-blur-sm border-b border-sand shadow-sm"
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-12">

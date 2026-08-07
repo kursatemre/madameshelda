@@ -1,21 +1,22 @@
 import { Hero } from "@/components/home/Hero";
-import { FeaturedGallery, type FeaturedProduct } from "@/components/home/FeaturedGallery";
+import { FeaturedGallery } from "@/components/home/FeaturedGallery";
 import { WorkshopTeaser, type TeaserWorkshop } from "@/components/home/WorkshopTeaser";
 import { CtaBanner } from "@/components/home/CtaBanner";
 import { getSiteContent } from "@/lib/site-content";
 import { createClient } from "@/lib/supabase/server";
+import { mapDBProduct, type Product } from "@/data/products";
 
 export default async function HomePage() {
   const contentPromise = getSiteContent(["home_hero", "home_featured", "home_workshop_teaser", "home_cta"]);
 
-  let featuredProducts: FeaturedProduct[] = [];
+  let featuredProducts: Product[] = [];
   let teaserWorkshops: TeaserWorkshop[] = [];
   try {
     const supabase = await createClient();
     const [{ data: products }, { data: workshops }] = await Promise.all([
       supabase
         .from("products")
-        .select("slug, title, category, images")
+        .select("*")
         .eq("is_featured", true)
         .eq("is_available", true)
         .order("created_at", { ascending: false })
@@ -27,7 +28,7 @@ export default async function HomePage() {
         .order("created_at", { ascending: true })
         .limit(3),
     ]);
-    if (products) featuredProducts = products;
+    if (products) featuredProducts = products.map(mapDBProduct);
     if (workshops) teaserWorkshops = workshops;
   } catch {
     // Supabase erişilemiyorsa bileşenler kendi mock verilerine düşer
