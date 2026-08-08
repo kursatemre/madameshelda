@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import { sendEmail } from "@/lib/email/client";
+import { contactAdmin, contactReceivedCustomer } from "@/lib/email/templates";
 
 export async function POST(request: Request) {
   try {
@@ -27,32 +29,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Kayıt sırasında hata oluştu." }, { status: 500 });
     }
 
-    // Send email notification via Resend if configured
-    if (process.env.RESEND_API_KEY && process.env.ADMIN_EMAIL) {
-      try {
-        const { Resend } = await import("resend");
-        const resend = new Resend(process.env.RESEND_API_KEY);
+    const adminEmail = process.env.ADMIN_EMAIL ?? "admin@madameshelda.com";
+    const admin = contactAdmin({ full_name, email, phone, subject, message, product_slug });
+    const customer = contactReceivedCustomer({ full_name });
 
-        await resend.emails.send({
-          from: "Madame Shelda <noreply@madameshelda.com>",
-          to: process.env.ADMIN_EMAIL,
-          subject: `Yeni Sipariş Talebi: ${subject}`,
-          html: `
-            <h2>Yeni Sipariş Talebi</h2>
-            <p><strong>Ad Soyad:</strong> ${full_name}</p>
-            <p><strong>E-posta:</strong> ${email}</p>
-            ${phone ? `<p><strong>Telefon:</strong> ${phone}</p>` : ""}
-            <p><strong>Konu:</strong> ${subject}</p>
-            ${product_slug ? `<p><strong>Eser:</strong> ${product_slug}</p>` : ""}
-            <p><strong>Mesaj:</strong></p>
-            <p style="background:#f5f5f5;padding:12px;border-radius:4px;">${message}</p>
-          `,
-        });
-      } catch (emailError) {
-        console.error("Email send error:", emailError);
-        // Don't fail the request if email fails
-      }
-    }
+    await Promise.allSettled([
+      sendEmail({ to: adminEmail, subject: admin.subject, html: admin.html }),
+      sendEmail({ to: email, subject: customer.subject, html: customer.html }),
+    ]);
 
     return NextResponse.json({ success: true });
   } catch {

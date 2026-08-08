@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import { sendEmail } from "@/lib/email/client";
+import { workshopRegistrationAdmin, workshopRegistrationCustomer } from "@/lib/email/templates";
 
 export async function POST(request: Request) {
   try {
@@ -60,60 +62,33 @@ export async function POST(request: Request) {
     }
 
     // Increment filled count
+    const newFilled = workshop.filled + 1;
     await supabase
       .from("workshops")
-      .update({ filled: workshop.filled + 1 })
+      .update({ filled: newFilled })
       .eq("id", workshop_id);
 
-    // Send confirmation email to registrant + admin notification
-    if (process.env.RESEND_API_KEY) {
-      try {
-        const { Resend } = await import("resend");
-        const resend = new Resend(process.env.RESEND_API_KEY);
+    const adminEmail = process.env.ADMIN_EMAIL ?? "admin@madameshelda.com";
+    const customer = workshopRegistrationCustomer({
+      full_name,
+      workshopTitle: workshop.title,
+      workshopDate: workshop.date,
+    });
+    const admin = workshopRegistrationAdmin({
+      full_name,
+      email,
+      phone,
+      notes,
+      workshopTitle: workshop.title,
+      workshopDate: workshop.date,
+      filled: newFilled,
+      capacity: workshop.capacity,
+    });
 
-        const dateFormatted = new Date(workshop.date).toLocaleDateString("tr-TR", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        });
-
-        // Confirmation to registrant
-        await resend.emails.send({
-          from: "Madame Shelda <noreply@madameshelda.com>",
-          to: email,
-          subject: `Workshop Başvurunuz Alındı — ${workshop.title}`,
-          html: `
-            <h2>Başvurunuz alındı!</h2>
-            <p>Merhaba ${full_name},</p>
-            <p><strong>${workshop.title}</strong> workshopuna başvurunuz başarıyla alınmıştır.</p>
-            <p><strong>Tarih:</strong> ${dateFormatted}</p>
-            <p>Başvurunuz incelendikten sonra sizinle iletişime geçeceğiz.</p>
-            <br/>
-            <p>Madame Shelda Design Art</p>
-          `,
-        });
-
-        // Admin notification
-        if (process.env.ADMIN_EMAIL) {
-          await resend.emails.send({
-            from: "Madame Shelda <noreply@madameshelda.com>",
-            to: process.env.ADMIN_EMAIL,
-            subject: `Yeni Workshop Başvurusu: ${workshop.title}`,
-            html: `
-              <h2>Yeni Workshop Başvurusu</h2>
-              <p><strong>Workshop:</strong> ${workshop.title} (${dateFormatted})</p>
-              <p><strong>Ad Soyad:</strong> ${full_name}</p>
-              <p><strong>E-posta:</strong> ${email}</p>
-              <p><strong>Telefon:</strong> ${phone}</p>
-              ${notes ? `<p><strong>Not:</strong> ${notes}</p>` : ""}
-              <p><strong>Doluluk:</strong> ${workshop.filled + 1}/${workshop.capacity}</p>
-            `,
-          });
-        }
-      } catch (emailError) {
-        console.error("Email send error:", emailError);
-      }
-    }
+    await Promise.allSettled([
+      sendEmail({ to: email, subject: customer.subject, html: customer.html }),
+      sendEmail({ to: adminEmail, subject: admin.subject, html: admin.html }),
+    ]);
 
     return NextResponse.json({ success: true });
   } catch {
