@@ -12,7 +12,7 @@ Kaynak denetim: bkz. sohbet geçmişi / 2026-08-09 "E-Ticaret Denetimi" artifact
 - [x] Faz 1 — Bildirim altyapısı (email) (2026-08-09)
 - [~] Faz 2 — Güvenlik & sağlamlık — zod + admin kilitleme tamam (2026-08-09), spam/bot koruması (Turnstile) **Cloudflare API token bekleniyor**
 - [x] Faz 3 — Yasal sayfalar (2026-08-09)
-- [ ] Faz 4 — Görünürlük (SEO + analytics)
+- [x] Faz 4 — Görünürlük (SEO + analytics) (2026-08-09)
 - [ ] Faz 5 — Büyüme (newsletter, kupon, terk edilmiş sepet)
 - [ ] Faz 6 — Üyelik sistemi & sipariş takibi
 - [ ] Faz 7 — Yorumlar & stok takibi
@@ -49,14 +49,19 @@ fonksiyonu, mevcut `if (process.env.RESEND_API_KEY)` no-op kalıbı korunur.
       olarak işaretli, admin panelinden doldurulmalı, yayından önce hukuk
       danışmanına kontrol ettirilmesi önerilir.**
 
-## Faz 4 — Görünürlük
+## Faz 4 — Görünürlük ✅
 **Madde 7 (eksiksiz), 8 (admin'den bağlanabilir analytics).**
 
-- [ ] `sitemap.xml`, `robots.txt`
-- [ ] Open Graph / Twitter Card meta (tüm sayfalar)
-- [ ] Ürün sayfalarında JSON-LD Product schema
-- [ ] Admin → Genel ayarlara GA4 Measurement ID, Meta Pixel ID, Search Console
+- [x] `sitemap.xml`, `robots.txt` (ürün + workshop slug'ları dinamik)
+- [x] Open Graph / Twitter Card meta (root layout + ürün/workshop detay)
+- [x] Ürün sayfalarında JSON-LD Product schema
+- [x] Admin → Genel ayarlara GA4 Measurement ID, Meta Pixel ID, Search Console
       doğrulama kodu alanları — girilirse siteye otomatik enjekte edilir
+      (`(site)/layout.tsx`, `next/script`)
+- ⚠️ **GA4/Meta Pixel ID'leri ve arama konsolu kodu admin panelinden
+      girilmeden hiçbir şey enjekte edilmez — alanlar boş kaldığı sürece
+      pasif. Kullanıcı kendi GA4/Meta hesabından ID'leri alıp
+      `/admin/site-icerigi` → Genel'e girmeli.**
 
 ## Faz 5 — Büyüme
 **Madde 9, 10, (11 — bkz. not).**
