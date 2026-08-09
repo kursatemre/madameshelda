@@ -6,6 +6,15 @@ işaretlenecek. Detaylı geçmiş için git commit mesajlarına bakılabilir.
 
 Kaynak denetim: bkz. sohbet geçmişi / 2026-08-09 "E-Ticaret Denetimi" artifact'ı.
 
+## ⚠️ Yapılacak: 3 migration dosyası production'a uygulanmalı
+
+Tüm kod hazır ve push edildi, ama şu 3 dosya henüz Supabase'e uygulanmadı:
+`supabase-faz5.sql`, `supabase-faz6.sql`, `supabase-faz7.sql` (proje kök
+dizininde). En kolay yol: Supabase Dashboard → SQL Editor → her dosyanın
+içeriğini sırayla yapıştırıp çalıştır (birbirine bağımlı değiller, ama
+faz sırasıyla uygulamak mantıklı). Hiçbiri mevcut siteyi bozmaz — her
+özellik migration'ı bekleyene kadar sessizce pasif kalacak şekilde yazıldı.
+
 ## Durum Özeti
 
 - [x] Faz 0 — Site İçeriği admin editörü, mobil admin, gerçek ürün verisi (2026-08-06/07)
@@ -15,7 +24,12 @@ Kaynak denetim: bkz. sohbet geçmişi / 2026-08-09 "E-Ticaret Denetimi" artifact
 - [x] Faz 4 — Görünürlük (SEO + analytics) (2026-08-09)
 - [x] Faz 5 — Büyüme (newsletter, kupon, terk edilmiş sepet) (2026-08-09) — **migration bekliyor**
 - [x] Faz 6 — Üyelik sistemi & sipariş takibi (2026-08-09) — **migration bekliyor**
-- [ ] Faz 7 — Yorumlar & stok takibi
+- [x] Faz 7 — Yorumlar & stok takibi (2026-08-09) — **migration bekliyor**
+
+**Roadmap'teki tüm fazlar tamamlandı.** Geriye yalnızca Turnstile (Madde 4,
+Cloudflare token bekliyor — aşağıya bakın) ve üç migration dosyasının
+(`supabase-faz5.sql`, `supabase-faz6.sql`, `supabase-faz7.sql`) production'a
+uygulanması kalıyor.
 
 ---
 
@@ -27,7 +41,7 @@ fonksiyonu, mevcut `if (process.env.RESEND_API_KEY)` no-op kalıbı korunur.
 - [x] Ortak e-posta gönderim yardımcı fonksiyonu (`src/lib/email/client.ts` + `templates.ts`)
 - [x] Sipariş durumu değişince müşteriye mail (`update-status` route'una eklendi)
 - [x] Workshop başvuru durumu değişince müşteriye mail (aynı route)
-- [ ] (Faz 7 review-hatırlatma maili de bu altyapıyı kullanacak — temel atıldı)
+- [x] Faz 7'de review-hatırlatma maili de bu altyapıyı kullandı
 
 ## Faz 2 — Güvenlik & Sağlamlık
 **Madde 4, 5, 6.**
@@ -108,14 +122,22 @@ fonksiyonu, mevcut `if (process.env.RESEND_API_KEY)` no-op kalıbı korunur.
       ayarlarını kontrol et; varsayılan built-in e-posta servisi düşük hacimli
       test için uygun, üretimde kendi SMTP'ni (Resend dahil) bağlaman önerilir.
 
-## Faz 7 — Yorumlar & Stok
+## Faz 7 — Yorumlar & Stok ✅ (kod tamam — migration bekliyor)
 **Madde 14 (genişletilmiş kapsam), 15.**
 
-- [ ] Ürün yorum sistemi — yıldız + metin + **görsel yükleme**
-- [ ] Admin onayı olmadan yorum yayınlanmaz (moderasyon kuyruğu)
-- [ ] Sipariş tamamlandıktan sonra "yorum yap" hatırlatma maili (Faz 1 altyapısını kullanır)
-- [ ] Adet bazlı stok takibi (`is_available` boolean yerine/yanında miktar alanı,
-      sıfırlanınca otomatik "Tükendi")
+- [x] Ürün yorum sistemi — yıldız + metin + **görsel yükleme** (en fazla 3 foto)
+- [x] Admin onayı olmadan yorum yayınlanmaz (`/admin/yorumlar` moderasyon kuyruğu)
+- [x] Sipariş onaylandıktan 7 gün sonra "yorum yap" hatırlatma maili (Faz 1
+      altyapısı + günlük cron)
+- [x] Adet bazlı stok takibi — `products.stock_quantity` (boş = sınırsız,
+      mevcut ürünler etkilenmez), her siparişte azalır, 0'da otomatik "Tükendi"
+- ⚠️ **`supabase-faz7.sql` production'a henüz uygulanmadı** — aynı durum,
+      aynı iki seçenek (Dashboard SQL Editor'e yapıştır / bana yeni bağlantı
+      ver). Uygulanana kadar: yorum gönderme formu hata gösterir, stok
+      azaltma sessizce atlanır (ürünler sınırsız stokmuş gibi davranmaya
+      devam eder — mevcut davranış), checkout etkilenmez.
+- ℹ️ **Kapsam dışı bırakılan (bilinçli):** varyant bazlı stok sayacı — renk
+      varyantları hâlâ elle `available` toggle'ı ile yönetiliyor.
 
 ---
 
