@@ -292,6 +292,27 @@ export interface Database {
         };
         Relationships: [];
       };
+      admin_login_attempts: {
+        Row: {
+          id: string;
+          ip: string;
+          success: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          ip: string;
+          success: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          ip?: string;
+          success?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       site_settings: {
         Row: {
           key: string;

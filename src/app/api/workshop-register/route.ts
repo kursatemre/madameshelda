@@ -2,15 +2,16 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/client";
 import { workshopRegistrationAdmin, workshopRegistrationCustomer } from "@/lib/email/templates";
+import { workshopRegisterSchema, firstIssueMessage } from "@/lib/validation";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { workshop_id, full_name, email, phone, notes } = body;
-
-    if (!workshop_id || !full_name || !email || !phone) {
-      return NextResponse.json({ error: "Zorunlu alanlar eksik." }, { status: 400 });
+    const parsed = workshopRegisterSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: firstIssueMessage(parsed) }, { status: 400 });
     }
+    const { workshop_id, full_name, email, phone, notes } = parsed.data;
 
     const supabase = await createServiceClient();
 

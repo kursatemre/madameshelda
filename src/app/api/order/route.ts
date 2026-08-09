@@ -2,15 +2,16 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/client";
 import { orderReceivedAdmin, orderReceivedCustomer } from "@/lib/email/templates";
+import { orderSchema, firstIssueMessage } from "@/lib/validation";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { ref, full_name, email, phone, address, city, note, items, total, payment_method } = body;
-
-    if (!full_name || !email || !phone || !address || !items?.length) {
-      return NextResponse.json({ error: "Zorunlu alanlar eksik." }, { status: 400 });
+    const parsed = orderSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: firstIssueMessage(parsed) }, { status: 400 });
     }
+    const { ref, full_name, email, phone, address, city, note, items, total, payment_method } = parsed.data;
 
     const supabase = await createServiceClient();
 
