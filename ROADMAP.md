@@ -63,14 +63,30 @@ fonksiyonu, mevcut `if (process.env.RESEND_API_KEY)` no-op kalıbı korunur.
       pasif. Kullanıcı kendi GA4/Meta hesabından ID'leri alıp
       `/admin/site-icerigi` → Genel'e girmeli.**
 
-## Faz 5 — Büyüme
-**Madde 9, 10, (11 — bkz. not).**
+## Faz 5 — Büyüme ✅ (kod tamam — migration bekliyor)
+**Madde 9, 10, 11.** Madde 11 için ayrıca onay alındı (2026-08-09).
 
-- [ ] Newsletter / e-posta toplama (footer + muhtemelen exit-intent ya da sayfa içi)
-- [ ] Kupon / indirim kodu sistemi (checkout'a kod alanı, admin'den kupon yönetimi)
-- [ ] ⚠️ **Madde 11 (terk edilmiş sepet hatırlatması) — onay listende atlanmıştı,
-      diğer her şeyle birlikte "yapalım" dediğin için dahil ettim. Gerek
-      görmüyorsan haber ver, çıkaralım.**
+- [x] Newsletter / e-posta toplama — footer formu + `/admin/bulten` (liste, CSV export)
+- [x] Kupon / indirim kodu sistemi — `/odeme`'de kod alanı + `/admin/kuponlar`
+      (yüzde/sabit tutar, min. sepet tutarı, kullanım limiti, son kullanma tarihi)
+- [x] Terk edilmiş sepet hatırlatma maili — sepet + e-posta sessizce sunucuya
+      kaydedilir, 2 saat hareketsizlik sonrası günlük cron ile tek seferlik mail
+- ⚠️ **`supabase-faz5.sql` production'a henüz uygulanmadı.** Önceki fazlarda
+      kullanılan doğrudan Postgres bağlantısı bu oturumda elimde yok (parola
+      saklanmadı — bilerek, güvenlik gereği). İki seçenek:
+      1) Supabase Dashboard → SQL Editor'e `supabase-faz5.sql` içeriğini
+         yapıştırıp çalıştır (en basit, hiçbir kimlik bilgisi paylaşmana
+         gerek yok).
+      2) Bana yeni bir bağlantı bilgisi verirsen (güvenli şekilde) ben
+         uygularım.
+      Migration uygulanana kadar **checkout hiçbir şekilde kilitlenmez** —
+      `/api/order` kupon/indirim kolonlarını yalnızca gerçekten bir kupon
+      uygulandıysa gönderir, o yüzden kuponsuz siparişler migration'dan önce
+      de sorunsuz oluşur. Migration çalışana kadar sadece şunlar pasif
+      kalır: kupon kodu uygulama, bülten kaydı (form hata gösterir), terk
+      sepet takibi (sessizce hiçbir şey kaydetmez). Vercel'de `CRON_SECRET`
+      env var'ı opsiyonel — eklemezsen cron yetkilendirmesiz çalışır,
+      eklemek istersen `.env.example`'da açıklaması var.
 
 ## Faz 6 — Üyelik Sistemi & Sipariş Takibi
 **Madde 13 (genişletilmiş kapsam).**

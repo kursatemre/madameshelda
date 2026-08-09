@@ -43,6 +43,11 @@ export async function POST(request: Request) {
 
     const total = Math.max(0, subtotal - discountAmount);
 
+    // coupon_code/discount_amount yalnızca gerçekten bir indirim
+    // uygulandıysa gönderilir. Böylece `supabase-faz5.sql` migration'ı henüz
+    // production'a uygulanmamışsa bile (orders tablosunda bu 2 kolon yoksa)
+    // kuponsuz siparişler eskisi gibi sorunsuz oluşturulmaya devam eder —
+    // migration eksikliği tüm checkout akışını kilitlemez.
     const { error } = await supabase.from("orders").insert({
       ref,
       full_name,
@@ -55,8 +60,7 @@ export async function POST(request: Request) {
       total,
       payment_method,
       status: "pending",
-      coupon_code: appliedCouponCode,
-      discount_amount: discountAmount,
+      ...(discountAmount > 0 ? { coupon_code: appliedCouponCode, discount_amount: discountAmount } : {}),
     });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
