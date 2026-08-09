@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, ShieldCheck, Copy, MessageCircle, CheckCircle } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Copy, MessageCircle, CheckCircle, UserRound } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useAuthUser } from "@/hooks/useAuthUser";
 import type { GeneralContent } from "@/lib/site-content";
 
 type PaymentMethod = "havale" | "whatsapp";
@@ -28,6 +29,7 @@ const DEFAULT_PAYMENT_INFO: Pick<GeneralContent, "bank_name" | "bank_iban" | "ba
 
 export default function OdemePage() {
   const { items, total, clear, sessionId } = useCart();
+  const { user } = useAuthUser();
   const [payment, setPayment] = useState<PaymentMethod>("havale");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -36,6 +38,21 @@ export default function OdemePage() {
   const [form, setForm] = useState<FormData>({
     full_name: "", email: "", phone: "", address: "", city: "", note: "",
   });
+
+  // Üye girişi yapılmışsa bilinen bilgiler render sırasında (effect değil,
+  // saf bir hesaplama) boş alanların yerine gösterilir — kullanıcı bir
+  // alanı düzenlemeye başlarsa kendi girdisi devralır. Gönderim de bu
+  // birleştirilmiş değerleri kullanır (aksi halde dokunulmamış ama ekranda
+  // dolu görünen bir alan boş gönderilebilirdi).
+  const displayForm: FormData = {
+    full_name: form.full_name || (user?.user_metadata?.full_name as string) || "",
+    email: form.email || user?.email || "",
+    phone: form.phone || (user?.user_metadata?.phone as string) || "",
+    address: form.address || (user?.user_metadata?.address as string) || "",
+    city: form.city || (user?.user_metadata?.city as string) || "",
+    note: form.note,
+  };
+
   const [paymentInfo, setPaymentInfo] = useState(DEFAULT_PAYMENT_INFO);
   const BANK = { name: paymentInfo.bank_name, iban: paymentInfo.bank_iban, account: paymentInfo.bank_account_holder };
   const WHATSAPP = paymentInfo.whatsapp_number;
@@ -126,7 +143,7 @@ export default function OdemePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ref,
-          ...form,
+          ...displayForm,
           items,
           total: finalTotal,
           payment_method: payment,
@@ -139,7 +156,7 @@ export default function OdemePage() {
 
       if (payment === "whatsapp") {
         const msg = encodeURIComponent(
-          `Merhaba, sipariş vermek istiyorum.\n\nSipariş No: ${ref}\n\n${itemsList}\n\nToplam: ₺${finalTotal.toLocaleString("tr-TR")}\n\nAd: ${form.full_name}\nTel: ${form.phone}`
+          `Merhaba, sipariş vermek istiyorum.\n\nSipariş No: ${ref}\n\n${itemsList}\n\nToplam: ₺${finalTotal.toLocaleString("tr-TR")}\n\nAd: ${displayForm.full_name}\nTel: ${displayForm.phone}`
         );
         window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, "_blank");
       }
@@ -248,7 +265,7 @@ export default function OdemePage() {
 
           <div className="text-center space-y-3">
             <p className="font-label text-[#888480] text-[0.55rem]">
-              Onay ve teslimat bilgileri {form.email} adresine gönderilecek.
+              Onay ve teslimat bilgileri {displayForm.email} adresine gönderilecek.
             </p>
             <Link href="/galeri" className="inline-block font-label text-gold text-[0.6rem] hover:text-brown transition-colors">
               Alışverişe Devam Et →
@@ -279,6 +296,15 @@ export default function OdemePage() {
                 <ShieldCheck size={12} className="text-gold" />
                 <span className="font-label text-[#888480] text-[0.55rem]">Güvenli sipariş</span>
               </div>
+              {!user && (
+                <p className="flex items-center gap-1.5 font-label text-[#888480] text-[0.55rem] mt-3">
+                  <UserRound size={12} className="text-gold" />
+                  Zaten üye misiniz?{" "}
+                  <Link href="/giris?redirect=/odeme" className="text-gold hover:text-brown transition-colors underline">
+                    Giriş yapın
+                  </Link>
+                </p>
+              )}
             </div>
 
             {/* Kişisel bilgiler */}
@@ -299,7 +325,7 @@ export default function OdemePage() {
                     <input
                       type={type}
                       required={required}
-                      value={form[field]}
+                      value={displayForm[field]}
                       onChange={set(field)}
                       onBlur={field === "email" ? handleEmailBlur : undefined}
                       className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm"
@@ -323,7 +349,7 @@ export default function OdemePage() {
                   <input
                     type="text"
                     required
-                    value={form.address}
+                    value={displayForm.address}
                     onChange={set("address")}
                     className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm"
                     placeholder="Mahalle, sokak, bina, daire"
@@ -336,7 +362,7 @@ export default function OdemePage() {
                   <input
                     type="text"
                     required
-                    value={form.city}
+                    value={displayForm.city}
                     onChange={set("city")}
                     className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm"
                     placeholder="İstanbul, Ankara..."

@@ -7,7 +7,10 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/admin", "/api", "/odeme"],
+      disallow: [
+        "/admin", "/api", "/odeme",
+        "/giris", "/kayit", "/sifremi-unuttum", "/sifre-sifirla", "/hesabim",
+      ],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
   };

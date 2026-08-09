@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, X } from "lucide-react";
+import { useAuthUser } from "@/hooks/useAuthUser";
 
 function InstagramIcon({ size = 18 }: { size?: number }) {
   return (
@@ -30,6 +31,10 @@ export function MobileNav({
   instagramUrl?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const { user } = useAuthUser();
+  const accountLink = user
+    ? { href: "/hesabim", label: "Hesabım" }
+    : { href: "/giris", label: "Giriş Yap" };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -60,7 +65,7 @@ export function MobileNav({
 
         {/* Navigation */}
         <nav className="flex-1 flex flex-col justify-center px-8 gap-2">
-          {navLinks.map((link, i) => (
+          {[...navLinks, accountLink].map((link, i) => (
             <Link
               key={link.href}
               href={link.href}

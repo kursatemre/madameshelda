@@ -52,6 +52,11 @@ export const newsletterSchema = z.object({
   source: z.string().trim().max(60).optional().nullable(),
 });
 
+export const orderLookupSchema = z.object({
+  ref: z.string().trim().min(1, "Sipariş numarası girin."),
+  email: z.string().trim().email("Geçerli bir e-posta adresi girin."),
+});
+
 export const couponValidateSchema = z.object({
   code: z.string().trim().min(1, "Kupon kodu girin.").max(60),
   subtotal: z.number().nonnegative(),

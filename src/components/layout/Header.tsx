@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, UserRound } from "lucide-react";
 import { MobileNav } from "./MobileNav";
 import { useCart } from "@/contexts/CartContext";
+import { useAuthUser } from "@/hooks/useAuthUser";
 import type { GeneralContent } from "@/lib/site-content";
 
 const navLinks = [
@@ -25,6 +26,7 @@ const DARK_HERO_PATHS = ["/", "/workshoplar"];
 export function Header({ general }: { general: GeneralContent }) {
   const [scrolled, setScrolled] = useState(false);
   const { count, setIsOpen } = useCart();
+  const { user } = useAuthUser();
   const pathname = usePathname();
 
   useEffect(() => {
@@ -92,6 +94,18 @@ export function Header({ general }: { general: GeneralContent }) {
 
           {/* Cart + CTA + Mobile hamburger */}
           <div className="flex items-center gap-3">
+            {/* Hesap */}
+            <Link
+              href={user ? "/hesabim" : "/giris"}
+              className={`hidden sm:inline-flex p-2 transition-colors duration-300 ${
+                transparent ? "text-cream/80 hover:text-cream" : "text-brown/70 hover:text-brown"
+              }`}
+              aria-label={user ? "Hesabım" : "Giriş Yap"}
+              title={user ? "Hesabım" : "Giriş Yap"}
+            >
+              <UserRound size={18} />
+            </Link>
+
             {/* Cart button */}
             <button
               onClick={() => setIsOpen(true)}

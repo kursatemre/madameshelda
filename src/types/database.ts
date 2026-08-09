@@ -197,6 +197,7 @@ export interface Database {
           status: string;
           coupon_code: string | null;
           discount_amount: number;
+          user_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -215,6 +216,7 @@ export interface Database {
           status?: string;
           coupon_code?: string | null;
           discount_amount?: number;
+          user_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -233,6 +235,7 @@ export interface Database {
           status?: string;
           coupon_code?: string | null;
           discount_amount?: number;
+          user_id?: string | null;
           updated_at?: string;
         };
         Relationships: [];

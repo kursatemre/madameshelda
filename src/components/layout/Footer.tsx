@@ -58,6 +58,7 @@ export function Footer({ general, newsletter }: { general: GeneralContent; newsl
                   { href: "/galeri", label: "Eserler" },
                   { href: "/workshoplar", label: "Workshoplar" },
                   { href: "/hakkimizda", label: "Hakkımızda" },
+                  { href: "/siparis-takip", label: "Sipariş Takip" },
                 ].map((link) => (
                   <li key={link.href}>
                     <Link

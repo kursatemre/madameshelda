@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/client";
 import { orderReceivedAdmin, orderReceivedCustomer } from "@/lib/email/templates";
 import { orderSchema, firstIssueMessage } from "@/lib/validation";
@@ -13,6 +13,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: firstIssueMessage(parsed) }, { status: 400 });
     }
     const { ref, full_name, email, phone, address, city, note, items, payment_method, coupon_code, session_id } = parsed.data;
+
+    // İsteğin kendi çerezlerinden — istemci hiçbir user_id göndermez, spoof
+    // edilemez. Login değilse sessizce null döner (misafir siparişi).
+    const authClient = await createClient();
+    const { data: { user } } = await authClient.auth.getUser();
 
     const supabase = await createServiceClient();
 
@@ -61,6 +66,7 @@ export async function POST(request: Request) {
       payment_method,
       status: "pending",
       ...(discountAmount > 0 ? { coupon_code: appliedCouponCode, discount_amount: discountAmount } : {}),
+      ...(user ? { user_id: user.id } : {}),
     });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
