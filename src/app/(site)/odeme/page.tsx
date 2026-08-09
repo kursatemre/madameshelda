@@ -152,7 +152,10 @@ export default function OdemePage() {
         }),
       });
 
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null);
+        throw new Error(errBody?.error || `Sunucu hatası (${res.status})`);
+      }
 
       if (payment === "whatsapp") {
         const msg = encodeURIComponent(
@@ -165,8 +168,8 @@ export default function OdemePage() {
       setOrderTotal(finalTotal);
       setSuccess(true);
       clear();
-    } catch {
-      alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+    } catch (err) {
+      alert(err instanceof Error && err.message ? err.message : "Bir hata oluştu. Lütfen tekrar deneyin.");
     } finally {
       setLoading(false);
     }
