@@ -18,6 +18,7 @@ type FormData = {
   description: string; dimensions: string; materials: string;
   images: ImageInput[]; variants: VariantDraft[];
   is_available: boolean; is_featured: boolean;
+  stock_quantity: string;
 };
 
 const defaults: FormData = {
@@ -25,6 +26,7 @@ const defaults: FormData = {
   description: "", dimensions: "", materials: "",
   images: [], variants: [],
   is_available: true, is_featured: false,
+  stock_quantity: "",
 };
 
 export type EserFormProps = {
@@ -134,6 +136,7 @@ export default function EserForm({ initial, productId, categories: categoriesPro
         variants,
         is_available: form.is_available,
         is_featured: form.is_featured,
+        stock_quantity: form.stock_quantity.trim() ? parseInt(form.stock_quantity, 10) : null,
       };
 
       const url = productId ? `/api/admin/products/${productId}` : "/api/admin/products";
@@ -253,6 +256,22 @@ export default function EserForm({ initial, productId, categories: categoriesPro
                     placeholder="2400"
                     min="0"
                   />
+                </div>
+                <div>
+                  <label className="font-label text-[#888480] text-[0.55rem] block mb-2">
+                    Stok Adedi
+                  </label>
+                  <input
+                    type="number"
+                    value={form.stock_quantity}
+                    onChange={(e) => set("stock_quantity", e.target.value)}
+                    className="w-full input-underline py-2.5 text-[#1a1a1a]"
+                    placeholder="Boş = sınırsız"
+                    min="0"
+                  />
+                  <p className="font-label text-[0.5rem] text-[#888480] normal-case mt-1.5">
+                    Girilirse her siparişte 1 azalır, 0&apos;a inince otomatik &quot;Tükendi&quot; olur.
+                  </p>
                 </div>
               </div>
             </div>

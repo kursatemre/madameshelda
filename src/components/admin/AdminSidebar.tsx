@@ -16,6 +16,7 @@ import {
   Menu,
   Percent,
   Mail,
+  MessageSquare,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -25,6 +26,7 @@ const navItems = [
   { href: "/admin/kategoriler", label: "Kategoriler", icon: Tag },
   { href: "/admin/workshoplar", label: "Workshoplar", icon: CalendarDays },
   { href: "/admin/basvurular", label: "Siparişler", icon: ClipboardList },
+  { href: "/admin/yorumlar", label: "Yorumlar", icon: MessageSquare },
   { href: "/admin/kuponlar", label: "Kuponlar", icon: Percent },
   { href: "/admin/bulten", label: "Bülten", icon: Mail },
   { href: "/admin/site-icerigi", label: "Site İçeriği", icon: PenSquare },

@@ -22,7 +22,7 @@ export async function GET() {
 export async function POST(request: Request) {
   if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await request.json();
-  const { slug, title, description, category, price, dimensions, materials, is_available, is_featured, images } = body;
+  const { slug, title, description, category, price, dimensions, materials, is_available, is_featured, images, stock_quantity } = body;
   if (!slug || !title || !category) {
     return NextResponse.json({ error: "slug, title ve category zorunludur." }, { status: 400 });
   }
@@ -40,6 +40,7 @@ export async function POST(request: Request) {
       is_available: is_available ?? true,
       is_featured: is_featured ?? false,
       images: images ?? [],
+      stock_quantity: stock_quantity ?? null,
     })
     .select()
     .single();

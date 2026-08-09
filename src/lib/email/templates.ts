@@ -201,6 +201,56 @@ export function workshopStatusChanged(w: {
   };
 }
 
+/* ────────────────────────────── Yorumlar ────────────────────────────── */
+
+export function reviewSubmittedAdmin(r: {
+  productTitle: string;
+  customerName: string;
+  email: string;
+  rating: number;
+  comment: string;
+  hasImages: boolean;
+}) {
+  return {
+    subject: `Yeni Yorum Onay Bekliyor — ${r.productTitle}`,
+    html: emailShell({
+      footer: false,
+      bodyHtml: `<h2 style="color:#5c1a2e;margin-bottom:4px">Yeni Yorum: ${r.productTitle}</h2>
+        <table style="font-size:13px;width:100%;margin-top:12px"><tbody>
+          <tr><td style="color:#888480;width:100px">Ad Soyad</td><td>${r.customerName}</td></tr>
+          <tr><td style="color:#888480">E-posta</td><td><a href="mailto:${r.email}">${r.email}</a></td></tr>
+          <tr><td style="color:#888480">Puan</td><td>${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</td></tr>
+          ${r.hasImages ? `<tr><td style="color:#888480">Fotoğraf</td><td>Var</td></tr>` : ""}
+        </tbody></table>
+        <p style="color:#888480;margin-bottom:6px">Yorum:</p>
+        <p style="background:#fdf8f3;padding:12px;margin:0 0 16px">${r.comment}</p>
+        <p style="font-size:13px;color:#888480">Onaylamak veya silmek için admin panelindeki <strong>Yorumlar</strong> sayfasını kullanın.</p>`,
+    }),
+  };
+}
+
+export function reviewRequest(o: {
+  full_name: string;
+  items: OrderItem[];
+  siteUrl: string;
+}) {
+  const links = o.items
+    .map(
+      (i) =>
+        `<li style="margin-bottom:6px">${i.title} — <a href="${o.siteUrl}/galeri">yorum yap</a></li>`
+    )
+    .join("");
+  return {
+    subject: "Eserinizi nasıl buldunuz? 🌸",
+    html: emailShell({
+      heading: `Merhaba ${o.full_name},`,
+      bodyHtml: `<p>Siparişinizin elinize ulaştığını umuyoruz. Deneyiminizi diğer müşterilerimizle paylaşmak ister misiniz?</p>
+        <ul style="font-size:14px;padding-left:20px">${links}</ul>
+        <p style="font-size:13px;color:#888480;margin-top:20px">Yorumunuz birkaç dakika içinde tamamlanır ve bizim için çok değerli.</p>`,
+    }),
+  };
+}
+
 /* ────────────────────────────── İletişim ────────────────────────────── */
 
 export function contactAdmin(c: {

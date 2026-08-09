@@ -52,6 +52,15 @@ export const newsletterSchema = z.object({
   source: z.string().trim().max(60).optional().nullable(),
 });
 
+export const reviewSchema = z.object({
+  product_id: z.string().trim().min(1, "Ürün bulunamadı."),
+  customer_name: z.string().trim().min(2, "Ad soyad en az 2 karakter olmalı."),
+  email: z.string().trim().email("Geçerli bir e-posta adresi girin."),
+  rating: z.number().int().min(1, "Puan seçin.").max(5),
+  comment: z.string().trim().min(5, "Yorum en az 5 karakter olmalı.").max(2000, "Yorum çok uzun."),
+  images: z.array(z.string().trim().url()).max(3, "En fazla 3 fotoğraf ekleyebilirsiniz.").optional(),
+});
+
 export const orderLookupSchema = z.object({
   ref: z.string().trim().min(1, "Sipariş numarası girin."),
   email: z.string().trim().email("Geçerli bir e-posta adresi girin."),

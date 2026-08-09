@@ -23,6 +23,7 @@ export interface Database {
           is_available: boolean;
           is_featured: boolean;
           variants: Json;
+          stock_quantity: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -39,6 +40,7 @@ export interface Database {
           is_available?: boolean;
           is_featured?: boolean;
           variants?: Json;
+          stock_quantity?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -55,6 +57,7 @@ export interface Database {
           is_available?: boolean;
           is_featured?: boolean;
           variants?: Json;
+          stock_quantity?: number | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -198,6 +201,7 @@ export interface Database {
           coupon_code: string | null;
           discount_amount: number;
           user_id: string | null;
+          review_reminder_sent_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -217,6 +221,7 @@ export interface Database {
           coupon_code?: string | null;
           discount_amount?: number;
           user_id?: string | null;
+          review_reminder_sent_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -236,9 +241,53 @@ export interface Database {
           coupon_code?: string | null;
           discount_amount?: number;
           user_id?: string | null;
+          review_reminder_sent_at?: string | null;
           updated_at?: string;
         };
         Relationships: [];
+      };
+      product_reviews: {
+        Row: {
+          id: string;
+          product_id: string;
+          customer_name: string;
+          email: string;
+          rating: number;
+          comment: string;
+          images: string[];
+          is_approved: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          product_id: string;
+          customer_name: string;
+          email: string;
+          rating: number;
+          comment: string;
+          images?: string[];
+          is_approved?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          product_id?: string;
+          customer_name?: string;
+          email?: string;
+          rating?: number;
+          comment?: string;
+          images?: string[];
+          is_approved?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "product_reviews_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       newsletter_subscribers: {
         Row: {

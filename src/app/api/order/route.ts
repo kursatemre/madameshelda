@@ -80,6 +80,32 @@ export async function POST(request: Request) {
       await supabase.from("cart_sessions").update({ converted_at: new Date().toISOString() }).eq("session_id", session_id);
     }
 
+    // Stok azaltma — yalnızca stock_quantity girilmiş ürünler için (null =
+    // sınırsız/takip edilmiyor). Aynı ürünün birden fazla varyantı sepette
+    // olabileceğinden slug başına adet sayılır. Best-effort: `products`
+    // tablosunda `stock_quantity` kolonu henüz yoksa (migration çalışmamışsa)
+    // sessizce atlanır, sipariş etkilenmez.
+    try {
+      const slugCounts = new Map<string, number>();
+      for (const item of items) {
+        if (item.slug) slugCounts.set(item.slug, (slugCounts.get(item.slug) ?? 0) + 1);
+      }
+      for (const [slug, count] of slugCounts) {
+        const { data: prod } = await supabase
+          .from("products")
+          .select("id, stock_quantity")
+          .eq("slug", slug)
+          .maybeSingle();
+        if (prod && prod.stock_quantity !== null) {
+          const newQty = Math.max(0, prod.stock_quantity - count);
+          await supabase
+            .from("products")
+            .update(newQty === 0 ? { stock_quantity: newQty, is_available: false } : { stock_quantity: newQty })
+            .eq("id", prod.id);
+        }
+      }
+    } catch {}
+
     const adminEmail = process.env.ADMIN_EMAIL ?? "admin@madameshelda.com";
     const admin = orderReceivedAdmin({ ref, full_name, email, phone, address, city, note, items, total, payment_method, coupon_code: appliedCouponCode, discount_amount: discountAmount });
     const customer = orderReceivedCustomer({ ref, full_name, items, total, payment_method, coupon_code: appliedCouponCode, discount_amount: discountAmount });

@@ -37,6 +37,7 @@ export default async function DuzenleEserPage({
         })),
         is_available: data.is_available,
         is_featured: data.is_featured,
+        stock_quantity: data.stock_quantity !== null && data.stock_quantity !== undefined ? String(data.stock_quantity) : "",
       }}
     />
   );
