@@ -9,8 +9,8 @@ Kaynak denetim: bkz. sohbet geçmişi / 2026-08-09 "E-Ticaret Denetimi" artifact
 ## Durum Özeti
 
 - [x] Faz 0 — Site İçeriği admin editörü, mobil admin, gerçek ürün verisi (2026-08-06/07)
-- [ ] Faz 1 — Bildirim altyapısı (email)
-- [ ] Faz 2 — Güvenlik & sağlamlık
+- [x] Faz 1 — Bildirim altyapısı (email) (2026-08-09)
+- [~] Faz 2 — Güvenlik & sağlamlık — zod + admin kilitleme tamam (2026-08-09), spam/bot koruması (Turnstile) sırada
 - [ ] Faz 3 — Yasal sayfalar
 - [ ] Faz 4 — Görünürlük (SEO + analytics)
 - [ ] Faz 5 — Büyüme (newsletter, kupon, terk edilmiş sepet)
@@ -24,18 +24,17 @@ Kaynak denetim: bkz. sohbet geçmişi / 2026-08-09 "E-Ticaret Denetimi" artifact
 fonksiyonu, mevcut `if (process.env.RESEND_API_KEY)` no-op kalıbı korunur.
 **`RESEND_API_KEY` şimdilik bağlanmayacak** — kullanıcı kendi ekleyecek.
 
-- [ ] Ortak e-posta gönderim yardımcı fonksiyonu (`src/lib/email.ts`) — marka
-      diline uygun HTML şablon iskeleti
-- [ ] Sipariş durumu değişince müşteriye mail (`update-status` route'una eklenir)
-- [ ] Workshop başvuru durumu değişince müşteriye mail (aynı route)
-- [ ] (Faz 7 review-hatırlatma maili de bu altyapıyı kullanacak — burada temel atılır)
+- [x] Ortak e-posta gönderim yardımcı fonksiyonu (`src/lib/email/client.ts` + `templates.ts`)
+- [x] Sipariş durumu değişince müşteriye mail (`update-status` route'una eklendi)
+- [x] Workshop başvuru durumu değişince müşteriye mail (aynı route)
+- [ ] (Faz 7 review-hatırlatma maili de bu altyapıyı kullanacak — temel atıldı)
 
 ## Faz 2 — Güvenlik & Sağlamlık
 **Madde 4, 5, 6.**
 
-- [ ] Zod ile API girdi doğrulama (contact, order, workshop-register, admin route'ları)
-- [ ] Admin login deneme sınırı / kilitleme
-- [ ] Public formlarda spam/bot koruması (Turnstile ya da eşdeğeri)
+- [x] Zod ile API girdi doğrulama (contact, order, workshop-register)
+- [x] Admin login deneme sınırı / kilitleme (`admin_login_attempts`, 15dk/5 deneme)
+- [ ] Public formlarda spam/bot koruması (Turnstile) — sırada
 
 ## Faz 3 — Yasal Sayfalar
 **Madde 3.** Statik değil — admin'den düzenlenebilir, "Sözleşmeler" başlığı altında.
