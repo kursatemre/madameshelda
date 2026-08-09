@@ -97,8 +97,26 @@ export function Footer({ general }: { general: GeneralContent }) {
           </div>
         </div>
 
+        {/* Yasal linkler */}
+        <div className="mt-16 pt-8 border-t border-brown-light/40 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+          {[
+            { href: "/kvkk", label: "KVKK" },
+            { href: "/gizlilik-politikasi", label: "Gizlilik Politikası" },
+            { href: "/mesafeli-satis-sozlesmesi", label: "Mesafeli Satış Sözleşmesi" },
+            { href: "/iptal-iade", label: "İptal & İade" },
+          ].map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="font-label text-cream/40 hover:text-cream/70 text-[0.55rem] transition-colors duration-300"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+
         {/* Bottom */}
-        <div className="mt-16 pt-8 border-t border-brown-light/40 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-6 pt-6 border-t border-brown-light/20 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="font-label text-cream/30 text-[0.6rem]">
             © {new Date().getFullYear()} {general.footer_copyright}
           </p>

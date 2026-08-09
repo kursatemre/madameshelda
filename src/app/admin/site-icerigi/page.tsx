@@ -5,13 +5,14 @@ import { toast } from "sonner";
 import { Loader2, Upload, Check } from "lucide-react";
 import { SITE_CONTENT_DEFAULTS, type SiteContent } from "@/lib/site-content-defaults";
 
-const TABS = ["genel", "anasayfa", "hakkimizda", "iletisim"] as const;
+const TABS = ["genel", "anasayfa", "hakkimizda", "iletisim", "sozlesmeler"] as const;
 type Tab = (typeof TABS)[number];
 const TAB_LABELS: Record<Tab, string> = {
   genel: "Genel",
   anasayfa: "Ana Sayfa",
   hakkimizda: "Hakkımızda",
   iletisim: "İletişim",
+  sozlesmeler: "Sözleşmeler",
 };
 
 export default function SiteIcerigiPage() {
@@ -323,6 +324,27 @@ export default function SiteIcerigiPage() {
               </div>
               <TextAreaField label="Giriş Metni" value={content.contact_page.intro} onChange={(v) => update("contact_page", { intro: v })} rows={2} />
             </SectionCard>
+          )}
+
+          {/* ── SÖZLEŞMELER ── */}
+          {tab === "sozlesmeler" && (
+            <div className="space-y-5">
+              <div className="bg-amber-50 border border-amber-200 p-4">
+                <p className="font-label text-amber-800 text-[0.6rem] normal-case leading-relaxed">
+                  Bu metinler yaygın kullanılan Türkçe e-ticaret şablonlarının iskeletidir, hukuki tavsiye
+                  değildir. <code className="font-mono">[Doldurulacak]</code> ile işaretli alanları (unvan,
+                  vergi/MERSİS no, adres, e-posta) doldurun ve yayına almadan önce bir hukuk danışmanına
+                  kontrol ettirmenizi öneririz.
+                </p>
+              </div>
+
+              {(["legal_kvkk", "legal_privacy", "legal_distance_sales", "legal_return_policy"] as const).map((key) => (
+                <SectionCard key={key} title={content[key].title} onSave={() => save(key)} saving={savingKey === key}>
+                  <TextField label="Başlık" value={content[key].title} onChange={(v) => update(key, { title: v })} />
+                  <TextAreaField label="Metin" value={content[key].content} onChange={(v) => update(key, { content: v })} rows={14} />
+                </SectionCard>
+              ))}
+            </div>
           )}
         </>
       )}

@@ -94,6 +94,12 @@ export type ContactPageContent = {
   intro: string;
 };
 
+export type LegalDocContent = {
+  title: string;
+  /** Paragraflar boş satırla ayrılır, sayfada olduğu gibi (pre-line) gösterilir. */
+  content: string;
+};
+
 export type SiteContent = {
   general: GeneralContent;
   home_hero: HomeHeroContent;
@@ -105,6 +111,10 @@ export type SiteContent = {
   about_values: AboutValuesContent;
   about_story: AboutStoryContent;
   contact_page: ContactPageContent;
+  legal_kvkk: LegalDocContent;
+  legal_privacy: LegalDocContent;
+  legal_distance_sales: LegalDocContent;
+  legal_return_policy: LegalDocContent;
 };
 
 export const SITE_CONTENT_DEFAULTS: SiteContent = {
@@ -200,5 +210,117 @@ export const SITE_CONTENT_DEFAULTS: SiteContent = {
     title_line1: "Birlikte",
     title_line2: "konuşalım",
     intro: "Özel sipariş, workshop soruları veya genel bilgi için bize ulaşabilirsiniz. En kısa sürede yanıt vermeye çalışıyoruz.",
+  },
+
+  /**
+   * Aşağıdaki 4 sözleşme/metin, yaygın kullanılan Türkçe e-ticaret şablonlarının
+   * İSKELETİDİR — hukuki tavsiye değildir. [Doldurulacak] ile işaretli alanlar
+   * (unvan, vergi/MERSİS no, adres vb.) admin panelinden doldurulmalı; yayına
+   * almadan önce bir hukuk danışmanına kontrol ettirilmesi önerilir.
+   */
+  legal_kvkk: {
+    title: "KVKK Aydınlatma Metni",
+    content: `Veri Sorumlusu
+
+6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, [Doldurulacak: İşletme Unvanı] ("Veri Sorumlusu") olarak, [Doldurulacak: Adres] adresinde faaliyet göstermekteyiz.
+
+İşlenen Kişisel Veriler
+
+Sitemiz ve mağazamız üzerinden sipariş, workshop kaydı veya iletişim formu yoluyla; ad-soyad, e-posta, telefon, teslimat adresi ve sipariş/ödeme bilgileriniz işlenmektedir.
+
+İşleme Amaçları
+
+Kişisel verileriniz; siparişlerinizin oluşturulması ve teslimatı, workshop kayıtlarınızın yönetimi, müşteri talep ve şikayetlerinizin karşılanması, yasal yükümlülüklerimizin yerine getirilmesi amaçlarıyla işlenmektedir.
+
+Hukuki Sebep
+
+Kişisel verileriniz, bir sözleşmenin kurulması veya ifasıyla doğrudan doğruya ilgili olması ve hukuki yükümlülüğün yerine getirilmesi hukuki sebeplerine dayanılarak işlenmektedir (KVKK m.5/2).
+
+Aktarım
+
+Kişisel verileriniz; kargo/lojistik firmaları, ödeme altyapısı sağlayıcıları ve yasal olarak yetkili kamu kurum/kuruluşları ile, yalnızca hizmetin ifası için gerekli ölçüde paylaşılabilir.
+
+Haklarınız (KVKK m.11)
+
+Kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenmişse buna ilişkin bilgi talep etme, işlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme, yurt içinde/yurt dışında aktarıldığı üçüncü kişileri bilme, eksik/yanlış işlenmişse düzeltilmesini isteme, silinmesini/yok edilmesini isteme, bu işlemlerin aktarıldığı üçüncü kişilere bildirilmesini isteme, münhasıran otomatik sistemlerle analiz sonucu aleyhinize bir sonucun ortaya çıkmasına itiraz etme, kanuna aykırı işleme nedeniyle zarara uğramanız hâlinde zararın giderilmesini talep etme haklarına sahipsiniz.
+
+Taleplerinizi [Doldurulacak: e-posta adresi] adresine iletebilirsiniz.`,
+  },
+  legal_privacy: {
+    title: "Gizlilik Politikası",
+    content: `Bu Gizlilik Politikası, [Doldurulacak: İşletme Unvanı] ("Madame Shelda Design Art") olarak topladığımız kişisel verilerin nasıl kullanıldığını açıklar.
+
+Topladığımız Bilgiler
+
+Sipariş verirken veya iletişime geçtiğinizde ad-soyad, e-posta, telefon, adres ve sipariş içeriği gibi bilgileri topluyoruz. Siteyi ziyaret ettiğinizde, kullanılan analitik araçlar (varsa) standart kullanım verilerini (sayfa görüntüleme, cihaz türü vb.) toplayabilir.
+
+Bilgilerin Kullanımı
+
+Topladığımız bilgiler yalnızca siparişlerinizin işlenmesi, teslimatı, müşteri desteği sağlanması ve yasal yükümlülüklerin yerine getirilmesi amacıyla kullanılır. Bilgileriniz pazarlama amacıyla üçüncü taraflarla satılmaz veya kiralanmaz.
+
+Çerezler
+
+Sitemiz, temel işlevsellik (ör. sepet, oturum) için çerezler kullanabilir. Tarayıcı ayarlarınızdan çerezleri yönetebilirsiniz.
+
+Veri Güvenliği
+
+Kişisel verilerinizin güvenliğini sağlamak için makul teknik ve idari önlemler alıyoruz. Ancak internet üzerinden hiçbir iletimin %100 güvenli olmadığını belirtmek isteriz.
+
+İletişim
+
+Bu politikayla ilgili sorularınız için [Doldurulacak: e-posta adresi] adresinden bize ulaşabilirsiniz.`,
+  },
+  legal_distance_sales: {
+    title: "Mesafeli Satış Sözleşmesi",
+    content: `Madde 1 — Taraflar
+
+Satıcı: [Doldurulacak: İşletme Unvanı], [Doldurulacak: Adres], [Doldurulacak: Vergi Dairesi/No].
+Alıcı: Sitemiz üzerinden sipariş veren müşteri.
+
+Madde 2 — Sözleşmenin Konusu
+
+İşbu sözleşme, Alıcı'nın Satıcı'ya ait internet sitesinden elektronik ortamda sipariş verdiği ürün/hizmetin satışı ve teslimi ile ilgili olarak 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği hükümleri gereğince tarafların hak ve yükümlülüklerini düzenler.
+
+Madde 3 — Ürün/Hizmet Bilgileri
+
+Ürünün türü, adedi, satış bedeli ve ödeme şekli, sipariş onayı sırasında Alıcı'ya sunulan bilgilerde belirtildiği gibidir. El yapımı ürünler doğası gereği görselden hafif farklılık gösterebilir.
+
+Madde 4 — Teslimat
+
+Ürünler, sipariş onayından itibaren belirtilen süre içinde, Alıcı'nın bildirdiği adrese kargo ile teslim edilir. Teslimat süresi ürün sayfasında/sipariş onayında ayrıca belirtilir.
+
+Madde 5 — Cayma Hakkı
+
+Alıcı, ürünü teslim aldığı tarihten itibaren 14 (on dört) gün içinde herhangi bir gerekçe göstermeksizin ve cezai şart ödemeksizin sözleşmeden cayma hakkına sahiptir. Ancak Alıcı'nın istekleri veya kişisel ihtiyaçları doğrultusunda hazırlanan (kişiye özel üretilen) ürünlerde, Mesafeli Sözleşmeler Yönetmeliği m.15 uyarınca cayma hakkı kullanılamayabilir — özel sipariş ürünler için bu istisna geçerlidir.
+
+Madde 6 — Ödeme
+
+Ödeme, sitede belirtilen yöntemlerle (banka havalesi/EFT veya WhatsApp üzerinden onay) gerçekleştirilir.
+
+Madde 7 — Uyuşmazlıkların Çözümü
+
+İşbu sözleşmeden doğan uyuşmazlıklarda, Ticaret Bakanlığınca ilan edilen değere kadar Alıcı'nın veya Satıcı'nın yerleşim yerindeki Tüketici Hakem Heyetleri, bu değerin üzerindeki uyuşmazlıklarda ise Tüketici Mahkemeleri yetkilidir.`,
+  },
+  legal_return_policy: {
+    title: "İptal ve İade Koşulları",
+    content: `Cayma Hakkı Süresi
+
+Sipariş ettiğiniz ürünü teslim aldığınız tarihten itibaren 14 gün içinde, herhangi bir gerekçe göstermeksizin iade edebilirsiniz.
+
+İstisna — Özel Sipariş Ürünler
+
+El yapımı, sizin talebiniz doğrultusunda kişiye özel hazırlanan (Özel Sipariş kategorisindeki) ürünlerde, ilgili mevzuat gereği cayma hakkı bulunmamaktadır. Bu ürünler yalnızca ayıplı/hasarlı teslim edilmesi durumunda iade/değişime konu olabilir.
+
+İade Süreci
+
+İade talebiniz için [Doldurulacak: e-posta adresi] veya WhatsApp üzerinden bizimle iletişime geçin. Ürünün kullanılmamış, orijinal ambalajında ve tekrar satılabilir durumda olması gerekir.
+
+İade Kargo Ücreti
+
+Ürünün ayıplı/hatalı teslim edilmesi durumunda kargo ücreti tarafımızca karşılanır. Cayma hakkı kapsamındaki iadelerde kargo ücreti, aksi belirtilmedikçe Alıcı'ya aittir.
+
+Geri Ödeme
+
+İade edilen ürün elimize ulaştıktan ve kontrol edildikten sonra, ödemeniz kullandığınız ödeme yöntemine uygun şekilde en geç 14 gün içinde iade edilir.`,
   },
 };
