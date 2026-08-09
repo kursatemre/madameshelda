@@ -13,8 +13,8 @@ Kaynak denetim: bkz. sohbet geçmişi / 2026-08-09 "E-Ticaret Denetimi" artifact
 - [~] Faz 2 — Güvenlik & sağlamlık — zod + admin kilitleme tamam (2026-08-09), spam/bot koruması (Turnstile) **Cloudflare API token bekleniyor**
 - [x] Faz 3 — Yasal sayfalar (2026-08-09)
 - [x] Faz 4 — Görünürlük (SEO + analytics) (2026-08-09)
-- [ ] Faz 5 — Büyüme (newsletter, kupon, terk edilmiş sepet)
-- [ ] Faz 6 — Üyelik sistemi & sipariş takibi
+- [x] Faz 5 — Büyüme (newsletter, kupon, terk edilmiş sepet) (2026-08-09) — **migration bekliyor**
+- [x] Faz 6 — Üyelik sistemi & sipariş takibi (2026-08-09) — **migration bekliyor**
 - [ ] Faz 7 — Yorumlar & stok takibi
 
 ---
@@ -88,13 +88,25 @@ fonksiyonu, mevcut `if (process.env.RESEND_API_KEY)` no-op kalıbı korunur.
       env var'ı opsiyonel — eklemezsen cron yetkilendirmesiz çalışır,
       eklemek istersen `.env.example`'da açıklaması var.
 
-## Faz 6 — Üyelik Sistemi & Sipariş Takibi
+## Faz 6 — Üyelik Sistemi & Sipariş Takibi ✅ (kod tamam — migration bekliyor)
 **Madde 13 (genişletilmiş kapsam).**
 
-- [ ] Müşteri hesabı / üyelik sistemi (kayıt, giriş — Supabase Auth)
-- [ ] Üye paneli (sipariş geçmişi, bilgiler)
-- [ ] Misafir sipariş takibi — sipariş no ile durum sorgulama (üye olmayanlar için)
-- [ ] Footer'a "Sipariş Takip" linki
+- [x] Müşteri hesabı / üyelik sistemi — `/giris`, `/kayit`, `/sifremi-unuttum`,
+      `/sifre-sifirla` (Supabase Auth, e-posta/şifre)
+- [x] Üye paneli (`/hesabim`) — sipariş geçmişi, profil bilgileri, çıkış
+- [x] Misafir sipariş takibi — `/siparis-takip` (sipariş no + e-posta)
+- [x] Footer'a "Sipariş Takip" linki
+- [x] `src/middleware.ts` → `src/proxy.ts` (Next.js 16 deprecation temizlendi,
+      davranış aynı)
+- ⚠️ **`supabase-faz6.sql` (orders.user_id) production'a henüz uygulanmadı** —
+      Faz 5'teki migration ile aynı durum, aynı iki seçenek geçerli (Dashboard
+      SQL Editor'e yapıştır, veya bana yeni bağlantı bilgisi ver). Uygulanana
+      kadar misafir checkout etkilenmez, sadece giriş yapmış kullanıcıların
+      siparişleri hesaplarına otomatik bağlanmaz.
+- ⚠️ **Supabase Auth'un kendi e-postaları (kayıt doğrulama, şifre sıfırlama)
+      Resend'den bağımsız** — Supabase Dashboard → Authentication → Emails
+      ayarlarını kontrol et; varsayılan built-in e-posta servisi düşük hacimli
+      test için uygun, üretimde kendi SMTP'ni (Resend dahil) bağlaman önerilir.
 
 ## Faz 7 — Yorumlar & Stok
 **Madde 14 (genişletilmiş kapsam), 15.**
