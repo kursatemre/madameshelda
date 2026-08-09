@@ -27,7 +27,9 @@ export async function GalleryGrid({
     const { data } = await supabase
       .from("products")
       .select("*")
-      .eq("is_available", true)
+      // Tükenen ürünler de listede kalır (GalleryCard "Tükendi" rozetiyle
+      // gösterir) — sadece sona sıralanır, öne çıkanlar/yeniler önde kalır.
+      .order("is_available", { ascending: false })
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false });
 
