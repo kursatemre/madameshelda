@@ -35,6 +35,8 @@ export const orderSchema = z.object({
   items: z.array(cartItemSchema).min(1, "Sepetiniz boş."),
   total: z.number().nonnegative(),
   payment_method: z.enum(["havale", "whatsapp"]),
+  coupon_code: z.string().trim().max(60).optional().nullable(),
+  session_id: z.string().trim().max(100).optional().nullable(),
 });
 
 export const workshopRegisterSchema = z.object({
@@ -44,3 +46,34 @@ export const workshopRegisterSchema = z.object({
   phone: z.string().trim().min(5, "Geçerli bir telefon numarası girin."),
   notes: z.string().trim().max(1000).optional().nullable(),
 });
+
+export const newsletterSchema = z.object({
+  email: z.string().trim().email("Geçerli bir e-posta adresi girin."),
+  source: z.string().trim().max(60).optional().nullable(),
+});
+
+export const couponValidateSchema = z.object({
+  code: z.string().trim().min(1, "Kupon kodu girin.").max(60),
+  subtotal: z.number().nonnegative(),
+});
+
+const cartSyncItemSchema = z.object({
+  id: z.string().min(1),
+  slug: z.string().optional(),
+  title: z.string().trim().min(1),
+  price: z.number().nonnegative(),
+  bg: z.string().optional(),
+  variantName: z.string().optional(),
+  variantHex: z.string().optional(),
+});
+
+export const cartSyncSchema = z
+  .object({
+    session_id: z.string().trim().min(1).max(100),
+    items: z.array(cartSyncItemSchema).max(100).optional(),
+    subtotal: z.number().nonnegative().optional(),
+    email: z.string().trim().email().optional(),
+  })
+  .refine((v) => v.items !== undefined || v.email !== undefined, {
+    message: "items veya email gerekli.",
+  });

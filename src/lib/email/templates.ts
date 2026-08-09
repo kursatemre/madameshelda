@@ -2,7 +2,7 @@ import { emailShell, moneyTR } from "./client";
 
 export type OrderItem = { title: string; price: number; variantName?: string; variantHex?: string };
 
-function itemsTableHtml(items: OrderItem[], total: number): string {
+function itemsTableHtml(items: OrderItem[], total: number, discount?: { amount: number; code?: string | null }): string {
   const rows = items
     .map(
       (i) =>
@@ -11,8 +11,15 @@ function itemsTableHtml(items: OrderItem[], total: number): string {
         }</td><td style="text-align:right;padding:6px 0;border-bottom:1px solid #f0ede8">${moneyTR(i.price)}</td></tr>`
     )
     .join("");
+  const subtotal = items.reduce((s, i) => s + i.price, 0);
+  const hasDiscount = !!discount && discount.amount > 0;
+  const footRows = hasDiscount
+    ? `<tr><td style="padding-top:12px;color:#888480">Ara Toplam</td><td style="text-align:right;padding-top:12px;color:#888480">${moneyTR(subtotal)}</td></tr>
+       <tr><td style="color:#5c1a2e">İndirim${discount!.code ? ` (${discount!.code})` : ""}</td><td style="text-align:right;color:#5c1a2e">-${moneyTR(discount!.amount)}</td></tr>
+       <tr><td style="padding-top:8px;font-weight:bold">Toplam</td><td style="text-align:right;padding-top:8px;color:#5c1a2e;font-size:18px">${moneyTR(total)}</td></tr>`
+    : `<tr><td style="padding-top:12px;font-weight:bold">Toplam</td><td style="text-align:right;padding-top:12px;color:#5c1a2e;font-size:18px">${moneyTR(total)}</td></tr>`;
   return `<table width="100%" style="margin:20px 0;font-size:14px"><tbody>${rows}</tbody>
-    <tfoot><tr><td style="padding-top:12px;font-weight:bold">Toplam</td><td style="text-align:right;padding-top:12px;color:#5c1a2e;font-size:18px">${moneyTR(total)}</td></tr></tfoot>
+    <tfoot>${footRows}</tfoot>
   </table>`;
 }
 
@@ -31,14 +38,17 @@ export function orderReceivedAdmin(o: {
   items: OrderItem[];
   total: number;
   payment_method: string;
+  coupon_code?: string | null;
+  discount_amount?: number;
 }) {
+  const discount = o.discount_amount ? { amount: o.discount_amount, code: o.coupon_code } : undefined;
   return {
     subject: `🛍 Yeni Sipariş #${o.ref} — ${moneyTR(o.total)}`,
     html: emailShell({
       footer: false,
       bodyHtml: `<h2 style="color:#5c1a2e;margin-bottom:4px">Yeni Sipariş #${o.ref}</h2>
         <p style="color:#888480;font-size:13px;margin-top:0">${new Date().toLocaleString("tr-TR")}</p>
-        ${itemsTableHtml(o.items, o.total)}
+        ${itemsTableHtml(o.items, o.total, discount)}
         <table style="font-size:13px;width:100%"><tbody>
           <tr><td style="color:#888480;width:100px">Müşteri</td><td>${o.full_name}</td></tr>
           <tr><td style="color:#888480">E-posta</td><td><a href="mailto:${o.email}">${o.email}</a></td></tr>
@@ -57,14 +67,17 @@ export function orderReceivedCustomer(o: {
   items: OrderItem[];
   total: number;
   payment_method: string;
+  coupon_code?: string | null;
+  discount_amount?: number;
 }) {
+  const discount = o.discount_amount ? { amount: o.discount_amount, code: o.coupon_code } : undefined;
   return {
     subject: `Siparişiniz Alındı — #${o.ref}`,
     html: emailShell({
       heading: `Merhaba ${o.full_name},`,
       bodyHtml: `<p>Siparişiniz başarıyla alındı. En kısa sürede sizinle iletişime geçeceğiz.</p>
         <p style="font-size:13px;color:#888480">Sipariş No: <strong style="color:#1a1a1a">${o.ref}</strong></p>
-        ${itemsTableHtml(o.items, o.total)}
+        ${itemsTableHtml(o.items, o.total, discount)}
         ${
           o.payment_method === "havale"
             ? `<div style="background:#fdf8f3;padding:16px;margin-top:20px;font-size:13px"><p style="margin:0 0 8px;font-weight:bold">Havale Bilgileri</p><p style="margin:0;color:#888480">Bankamız ve IBAN bilgileri için WhatsApp üzerinden bize ulaşabilirsiniz.</p></div>`
@@ -92,6 +105,30 @@ export function orderStatusChanged(o: {
           : `<strong style="color:#5c1a2e">#${o.ref}</strong> numaralı siparişiniz iptal edildi. Bir yanlışlık olduğunu düşünüyorsanız bize ulaşabilirsiniz.`
       }</p>
       ${itemsTableHtml(o.items, o.total)}`,
+    }),
+  };
+}
+
+export function abandonedCartReminder(o: { items: OrderItem[]; subtotal: number; siteUrl: string }) {
+  const rows = o.items
+    .map(
+      (i) =>
+        `<tr><td style="padding:6px 0;border-bottom:1px solid #f0ede8">${i.title}${
+          i.variantName ? ` <span style="color:#888480">(${i.variantName})</span>` : ""
+        }</td><td style="text-align:right;padding:6px 0;border-bottom:1px solid #f0ede8">${moneyTR(i.price)}</td></tr>`
+    )
+    .join("");
+  return {
+    subject: "Sepetinizde sizi bekleyen eserler var 🌸",
+    html: emailShell({
+      heading: "Bir şeyler mi unuttunuz?",
+      bodyHtml: `<p>Sepetinize eklediğiniz eserler hâlâ sizi bekliyor. Dilerseniz kaldığınız yerden devam edebilirsiniz.</p>
+        <table width="100%" style="margin:20px 0;font-size:14px"><tbody>${rows}</tbody>
+          <tfoot><tr><td style="padding-top:12px;font-weight:bold">Ara Toplam</td><td style="text-align:right;padding-top:12px;color:#5c1a2e;font-size:18px">${moneyTR(o.subtotal)}</td></tr></tfoot>
+        </table>
+        <p style="text-align:center;margin-top:28px">
+          <a href="${o.siteUrl}/galeri" style="display:inline-block;background:#5c1a2e;color:#fdf8f3;text-decoration:none;padding:14px 32px;font-size:13px;letter-spacing:0.05em">ESERLERE GÖZ AT</a>
+        </p>`,
     }),
   };
 }

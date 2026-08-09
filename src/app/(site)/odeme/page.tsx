@@ -27,17 +27,69 @@ const DEFAULT_PAYMENT_INFO: Pick<GeneralContent, "bank_name" | "bank_iban" | "ba
 };
 
 export default function OdemePage() {
-  const { items, total, clear } = useCart();
+  const { items, total, clear, sessionId } = useCart();
   const [payment, setPayment] = useState<PaymentMethod>("havale");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [orderRef, setOrderRef] = useState("");
+  const [orderTotal, setOrderTotal] = useState(0);
   const [form, setForm] = useState<FormData>({
     full_name: "", email: "", phone: "", address: "", city: "", note: "",
   });
   const [paymentInfo, setPaymentInfo] = useState(DEFAULT_PAYMENT_INFO);
   const BANK = { name: paymentInfo.bank_name, iban: paymentInfo.bank_iban, account: paymentInfo.bank_account_holder };
   const WHATSAPP = paymentInfo.whatsapp_number;
+
+  // Kupon
+  const [couponCode, setCouponCode] = useState("");
+  const [couponStatus, setCouponStatus] = useState<"idle" | "loading" | "applied" | "error">("idle");
+  const [couponMessage, setCouponMessage] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const finalTotal = Math.max(0, total - discount);
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim() || couponStatus === "loading") return;
+    setCouponStatus("loading");
+    try {
+      const res = await fetch("/api/coupon/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponCode.trim(), subtotal: total }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.valid) {
+        setCouponStatus("error");
+        setDiscount(0);
+        setCouponMessage(data.message || "Geçersiz kupon kodu.");
+        return;
+      }
+      setCouponStatus("applied");
+      setDiscount(data.discount);
+      setCouponMessage(data.message);
+    } catch {
+      setCouponStatus("error");
+      setDiscount(0);
+      setCouponMessage("Bir hata oluştu, lütfen tekrar deneyin.");
+    }
+  };
+
+  const removeCoupon = () => {
+    setCouponCode("");
+    setCouponStatus("idle");
+    setDiscount(0);
+    setCouponMessage("");
+  };
+
+  // Terk edilmiş sepet hatırlatması — e-posta girilir girilmez sessizce
+  // sunucuya kaydedilir. Hata olursa yutulur, akışı hiç etkilemez.
+  const handleEmailBlur = () => {
+    if (!sessionId || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return;
+    fetch("/api/cart-sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId, email: form.email }),
+    }).catch(() => {});
+  };
 
   // Banka/WhatsApp bilgilerini sessizce güncelle — fetch başarısız olursa
   // yukarıdaki DEFAULT_PAYMENT_INFO ile checkout çalışmaya devam eder.
@@ -76,8 +128,10 @@ export default function OdemePage() {
           ref,
           ...form,
           items,
-          total,
+          total: finalTotal,
           payment_method: payment,
+          coupon_code: couponStatus === "applied" ? couponCode.trim() : undefined,
+          session_id: sessionId || undefined,
         }),
       });
 
@@ -85,12 +139,13 @@ export default function OdemePage() {
 
       if (payment === "whatsapp") {
         const msg = encodeURIComponent(
-          `Merhaba, sipariş vermek istiyorum.\n\nSipariş No: ${ref}\n\n${itemsList}\n\nToplam: ₺${total.toLocaleString("tr-TR")}\n\nAd: ${form.full_name}\nTel: ${form.phone}`
+          `Merhaba, sipariş vermek istiyorum.\n\nSipariş No: ${ref}\n\n${itemsList}\n\nToplam: ₺${finalTotal.toLocaleString("tr-TR")}\n\nAd: ${form.full_name}\nTel: ${form.phone}`
         );
         window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, "_blank");
       }
 
       setOrderRef(ref);
+      setOrderTotal(finalTotal);
       setSuccess(true);
       clear();
     } catch {
@@ -133,7 +188,7 @@ export default function OdemePage() {
             <div className="border border-sand p-6 mb-6 space-y-4">
               <p className="font-label text-[#1a1a1a] text-[0.65rem] mb-1">Havale / EFT Bilgileri</p>
               <p className="text-[#888480] font-light text-sm">
-                Aşağıdaki hesaba <strong>₺{total.toLocaleString("tr-TR")}</strong> tutarında havale yapın.
+                Aşağıdaki hesaba <strong>₺{orderTotal.toLocaleString("tr-TR")}</strong> tutarında havale yapın.
                 Açıklamaya sipariş numaranızı yazmayı unutmayın.
               </p>
 
@@ -246,6 +301,7 @@ export default function OdemePage() {
                       required={required}
                       value={form[field]}
                       onChange={set(field)}
+                      onBlur={field === "email" ? handleEmailBlur : undefined}
                       className="w-full input-underline py-2.5 text-[#1a1a1a] text-sm"
                       placeholder={label}
                     />
@@ -377,11 +433,58 @@ export default function OdemePage() {
                 ))}
               </div>
 
-              <div className="border-t border-sand pt-4 space-y-2">
+              {/* Kupon kodu */}
+              <div className="border-t border-sand pt-4 pb-1">
+                {couponStatus === "applied" ? (
+                  <div className="flex items-center justify-between gap-2 bg-green-50 border border-green-200 px-3 py-2.5">
+                    <span className="font-label text-green-700 text-[0.6rem] truncate">
+                      &quot;{couponCode.trim().toUpperCase()}&quot; uygulandı
+                    </span>
+                    <button
+                      type="button"
+                      onClick={removeCoupon}
+                      className="font-label text-green-700/70 hover:text-green-800 text-[0.55rem] underline shrink-0"
+                    >
+                      Kaldır
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={couponCode}
+                        onChange={(e) => { setCouponCode(e.target.value); if (couponStatus === "error") setCouponStatus("idle"); }}
+                        placeholder="Kupon kodu"
+                        className="flex-1 min-w-0 input-underline py-2 text-[#1a1a1a] text-sm uppercase"
+                      />
+                      <button
+                        type="button"
+                        onClick={applyCoupon}
+                        disabled={couponStatus === "loading" || !couponCode.trim()}
+                        className="shrink-0 font-label text-[0.55rem] px-4 py-2 border border-brown text-brown hover:bg-brown hover:text-cream transition-colors disabled:opacity-40"
+                      >
+                        {couponStatus === "loading" ? "..." : "Uygula"}
+                      </button>
+                    </div>
+                    {couponStatus === "error" && (
+                      <p className="text-red-500 text-xs font-light mt-2">{couponMessage}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-4 space-y-2">
                 <div className="flex justify-between">
                   <span className="font-label text-[#888480] text-[0.6rem]">Ara Toplam</span>
                   <span className="font-label text-[#888480] text-[0.6rem]">₺{total.toLocaleString("tr-TR")}</span>
                 </div>
+                {discount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="font-label text-brown text-[0.6rem]">İndirim</span>
+                    <span className="font-label text-brown text-[0.6rem]">-₺{discount.toLocaleString("tr-TR")}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="font-label text-[#888480] text-[0.6rem]">Kargo</span>
                   <span className="font-label text-green-600 text-[0.6rem]">Ücretsiz</span>
@@ -389,7 +492,7 @@ export default function OdemePage() {
                 <div className="flex justify-between pt-3 border-t border-sand mt-2">
                   <span className="font-label text-[#1a1a1a] text-[0.65rem]">Toplam</span>
                   <span className="font-serif text-[#1a1a1a] text-xl" style={{ fontStyle: "italic" }}>
-                    ₺{total.toLocaleString("tr-TR")}
+                    ₺{finalTotal.toLocaleString("tr-TR")}
                   </span>
                 </div>
               </div>

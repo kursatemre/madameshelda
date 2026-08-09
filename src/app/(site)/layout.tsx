@@ -9,7 +9,7 @@ export default async function SiteLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { general } = await getSiteContent(["general"]);
+  const { general, newsletter } = await getSiteContent(["general", "newsletter"]);
 
   return (
     <>
@@ -50,7 +50,7 @@ export default async function SiteLayout({
       <ClientProviders>
         <Header general={general} />
         <main className="flex-1">{children}</main>
-        <Footer general={general} />
+        <Footer general={general} newsletter={newsletter} />
       </ClientProviders>
     </>
   );

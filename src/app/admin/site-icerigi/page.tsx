@@ -200,6 +200,23 @@ export default function SiteIcerigiPage() {
             </SectionCard>
           )}
 
+          {/* ── GENEL: Bülten ── (ayrı kart, ayrı site_settings anahtarı) */}
+          {tab === "genel" && (
+            <div className="mt-5">
+              <SectionCard title="Bülten (Footer Kayıt Formu)" onSave={() => save("newsletter")} saving={savingKey === "newsletter"}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <TextField label="Başlık" value={content.newsletter.heading} onChange={(v) => update("newsletter", { heading: v })} />
+                  <TextField label="Buton Metni" value={content.newsletter.button_label} onChange={(v) => update("newsletter", { button_label: v })} />
+                </div>
+                <TextAreaField label="Alt Metin" value={content.newsletter.subtext} onChange={(v) => update("newsletter", { subtext: v })} rows={2} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <TextField label="Input Placeholder" value={content.newsletter.placeholder} onChange={(v) => update("newsletter", { placeholder: v })} />
+                  <TextField label="Başarı Mesajı" value={content.newsletter.success_message} onChange={(v) => update("newsletter", { success_message: v })} />
+                </div>
+              </SectionCard>
+            </div>
+          )}
+
           {/* ── ANA SAYFA ── */}
           {tab === "anasayfa" && (
             <div className="space-y-5">

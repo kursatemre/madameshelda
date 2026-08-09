@@ -195,6 +195,8 @@ export interface Database {
           total: number;
           payment_method: string;
           status: string;
+          coupon_code: string | null;
+          discount_amount: number;
           created_at: string;
           updated_at: string;
         };
@@ -211,6 +213,8 @@ export interface Database {
           total: number;
           payment_method: string;
           status?: string;
+          coupon_code?: string | null;
+          discount_amount?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -227,7 +231,108 @@ export interface Database {
           total?: number;
           payment_method?: string;
           status?: string;
+          coupon_code?: string | null;
+          discount_amount?: number;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      newsletter_subscribers: {
+        Row: {
+          id: string;
+          email: string;
+          source: string | null;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          source?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          source?: string | null;
+          is_active?: boolean;
+        };
+        Relationships: [];
+      };
+      coupons: {
+        Row: {
+          id: string;
+          code: string;
+          type: string;
+          value: number;
+          min_order_total: number;
+          max_uses: number | null;
+          used_count: number;
+          expires_at: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          code: string;
+          type?: string;
+          value: number;
+          min_order_total?: number;
+          max_uses?: number | null;
+          used_count?: number;
+          expires_at?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          code?: string;
+          type?: string;
+          value?: number;
+          min_order_total?: number;
+          max_uses?: number | null;
+          used_count?: number;
+          expires_at?: string | null;
+          is_active?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      cart_sessions: {
+        Row: {
+          id: string;
+          session_id: string;
+          email: string | null;
+          items: Json;
+          subtotal: number;
+          reminder_sent_at: string | null;
+          converted_at: string | null;
+          last_activity_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          session_id: string;
+          email?: string | null;
+          items?: Json;
+          subtotal?: number;
+          reminder_sent_at?: string | null;
+          converted_at?: string | null;
+          last_activity_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          session_id?: string;
+          email?: string | null;
+          items?: Json;
+          subtotal?: number;
+          reminder_sent_at?: string | null;
+          converted_at?: string | null;
+          last_activity_at?: string;
         };
         Relationships: [];
       };

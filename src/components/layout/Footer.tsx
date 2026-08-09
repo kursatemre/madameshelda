@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Mail, Phone } from "lucide-react";
-import type { GeneralContent } from "@/lib/site-content";
+import type { GeneralContent, NewsletterContent } from "@/lib/site-content";
+import { NewsletterForm } from "@/components/layout/NewsletterForm";
 
 function InstagramIcon({ size = 13 }: { size?: number }) {
   return (
@@ -12,7 +13,7 @@ function InstagramIcon({ size = 13 }: { size?: number }) {
   );
 }
 
-export function Footer({ general }: { general: GeneralContent }) {
+export function Footer({ general, newsletter }: { general: GeneralContent; newsletter: NewsletterContent }) {
   return (
     <footer className="bg-[#1a1a1a] text-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-16 lg:py-20">
@@ -33,6 +34,17 @@ export function Footer({ general }: { general: GeneralContent }) {
             <p className="text-cream/50 text-sm font-light leading-relaxed max-w-xs">
               {general.footer_tagline}
             </p>
+
+            {/* Bülten */}
+            <div className="mt-8">
+              <p className="font-label text-gold text-[0.6rem] mb-1">
+                {newsletter.heading}
+              </p>
+              <p className="text-cream/40 text-xs font-light leading-relaxed mb-4 max-w-xs">
+                {newsletter.subtext}
+              </p>
+              <NewsletterForm content={newsletter} />
+            </div>
           </div>
 
           {/* Links */}

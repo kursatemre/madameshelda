@@ -104,6 +104,14 @@ export type LegalDocContent = {
   content: string;
 };
 
+export type NewsletterContent = {
+  heading: string;
+  subtext: string;
+  placeholder: string;
+  button_label: string;
+  success_message: string;
+};
+
 export type SiteContent = {
   general: GeneralContent;
   home_hero: HomeHeroContent;
@@ -119,6 +127,7 @@ export type SiteContent = {
   legal_privacy: LegalDocContent;
   legal_distance_sales: LegalDocContent;
   legal_return_policy: LegalDocContent;
+  newsletter: NewsletterContent;
 };
 
 export const SITE_CONTENT_DEFAULTS: SiteContent = {
@@ -329,5 +338,12 @@ El yapımı, sizin talebiniz doğrultusunda kişiye özel hazırlanan (Özel Sip
 Geri Ödeme
 
 İade edilen ürün elimize ulaştıktan ve kontrol edildikten sonra, ödemeniz kullandığınız ödeme yöntemine uygun şekilde en geç 14 gün içinde iade edilir.`,
+  },
+  newsletter: {
+    heading: "Bültenimize Katılın",
+    subtext: "Yeni eserler, workshop tarihleri ve özel fırsatlardan ilk siz haberdar olun.",
+    placeholder: "E-posta adresiniz",
+    button_label: "Katıl",
+    success_message: "Teşekkürler! Bültenimize başarıyla katıldınız.",
   },
 };
