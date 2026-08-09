@@ -10,8 +10,8 @@ Kaynak denetim: bkz. sohbet geçmişi / 2026-08-09 "E-Ticaret Denetimi" artifact
 
 - [x] Faz 0 — Site İçeriği admin editörü, mobil admin, gerçek ürün verisi (2026-08-06/07)
 - [x] Faz 1 — Bildirim altyapısı (email) (2026-08-09)
-- [~] Faz 2 — Güvenlik & sağlamlık — zod + admin kilitleme tamam (2026-08-09), spam/bot koruması (Turnstile) sırada
-- [ ] Faz 3 — Yasal sayfalar
+- [~] Faz 2 — Güvenlik & sağlamlık — zod + admin kilitleme tamam (2026-08-09), spam/bot koruması (Turnstile) **Cloudflare API token bekleniyor**
+- [x] Faz 3 — Yasal sayfalar (2026-08-09)
 - [ ] Faz 4 — Görünürlük (SEO + analytics)
 - [ ] Faz 5 — Büyüme (newsletter, kupon, terk edilmiş sepet)
 - [ ] Faz 6 — Üyelik sistemi & sipariş takibi
@@ -36,16 +36,18 @@ fonksiyonu, mevcut `if (process.env.RESEND_API_KEY)` no-op kalıbı korunur.
 - [x] Admin login deneme sınırı / kilitleme (`admin_login_attempts`, 15dk/5 deneme)
 - [ ] Public formlarda spam/bot koruması (Turnstile) — sırada
 
-## Faz 3 — Yasal Sayfalar
+## Faz 3 — Yasal Sayfalar ✅
 **Madde 3.** Statik değil — admin'den düzenlenebilir, "Sözleşmeler" başlığı altında.
 
-- [ ] KVKK Aydınlatma Metni
-- [ ] Gizlilik Politikası
-- [ ] Mesafeli Satış Sözleşmesi
-- [ ] İptal / İade Koşulları
-- [ ] Admin: `/admin/sozlesmeler` — her sözleşme için metin alanı (site_settings
-      kalıbına benzer, muhtemelen zengin metin/markdown)
-- [ ] Footer'a linkler
+- [x] KVKK Aydınlatma Metni (`/kvkk`)
+- [x] Gizlilik Politikası (`/gizlilik-politikasi`)
+- [x] Mesafeli Satış Sözleşmesi (`/mesafeli-satis-sozlesmesi`)
+- [x] İptal / İade Koşulları (`/iptal-iade`)
+- [x] Admin: `/admin/site-icerigi` → "Sözleşmeler" sekmesi
+- [x] Footer'a linkler
+- ⚠️ **Metinler şablon iskeleti — unvan/vergi no/adres `[Doldurulacak]`
+      olarak işaretli, admin panelinden doldurulmalı, yayından önce hukuk
+      danışmanına kontrol ettirilmesi önerilir.**
 
 ## Faz 4 — Görünürlük
 **Madde 7 (eksiksiz), 8 (admin'den bağlanabilir analytics).**
