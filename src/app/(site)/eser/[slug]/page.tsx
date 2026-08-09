@@ -12,9 +12,14 @@ export async function generateMetadata({
   const { slug } = await params;
   try {
     const supabase = await createClient();
-    const { data } = await supabase.from("products").select("title, description").eq("slug", slug).single();
+    const { data } = await supabase.from("products").select("title, description, images").eq("slug", slug).single();
     if (data) {
-      return { title: `${data.title} — Madame Shelda`, description: data.description ?? undefined };
+      const image = data.images?.[0];
+      return {
+        title: `${data.title} — Madame Shelda`,
+        description: data.description ?? undefined,
+        openGraph: image ? { images: [{ url: image, width: 1200, height: 1200 }] } : undefined,
+      };
     }
   } catch {}
   const product = getProduct(slug);
@@ -44,5 +49,25 @@ export default async function EserDetayPage({
   if (!product) product = getProduct(slug) ?? null;
   if (!product) notFound();
 
-  return <EserDetayClient product={product} />;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    description: product.description,
+    image: product.images && product.images.length > 0 ? product.images : undefined,
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "TRY",
+      price: product.price,
+      availability: product.available ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+    },
+  };
+
+  return (
+    <>
+      {/* eslint-disable-next-line react/no-danger */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <EserDetayClient product={product} />
+    </>
+  );
 }

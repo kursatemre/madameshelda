@@ -20,6 +20,10 @@ export type GeneralContent = {
   bank_name: string;
   bank_iban: string;
   bank_account_holder: string;
+  /** Boşsa ilgili script/etiket hiç eklenmez. */
+  ga4_measurement_id: string;
+  meta_pixel_id: string;
+  search_console_verification: string;
 };
 
 export type HomeHeroContent = {
@@ -133,6 +137,9 @@ export const SITE_CONTENT_DEFAULTS: SiteContent = {
     bank_name: "Ziraat Bankası",
     bank_iban: "TR00 0000 0000 0000 0000 0000 00",
     bank_account_holder: "Madame Shelda",
+    ga4_measurement_id: "",
+    meta_pixel_id: "",
+    search_console_verification: "",
   },
   home_hero: {
     eyebrow: "— El Yapımı Çiçek Tasarımları",

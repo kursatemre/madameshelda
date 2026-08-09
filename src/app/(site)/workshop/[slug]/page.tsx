@@ -43,8 +43,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   try {
     const supabase = await createClient();
-    const { data } = await supabase.from("workshops").select("title, description").eq("slug", slug).single();
-    if (data) return { title: `${data.title} — Madame Shelda`, description: data.description ?? undefined };
+    const { data } = await supabase.from("workshops").select("title, description, image_url").eq("slug", slug).single();
+    if (data) {
+      return {
+        title: `${data.title} — Madame Shelda`,
+        description: data.description ?? undefined,
+        openGraph: data.image_url ? { images: [{ url: data.image_url, width: 1200, height: 1200 }] } : undefined,
+      };
+    }
   } catch {}
   const ws = mockWorkshops[slug];
   if (!ws) return {};

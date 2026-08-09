@@ -170,6 +170,33 @@ export default function SiteIcerigiPage() {
                   />
                 </div>
               </FieldGroup>
+
+              <FieldGroup label="Analytics & Doğrulama">
+                <p className="font-label text-[0.5rem] text-[#888480] normal-case -mt-2">
+                  Boş bırakılan alanlar için ilgili kod hiç eklenmez.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <TextField
+                    label="Google Analytics 4 Measurement ID"
+                    value={content.general.ga4_measurement_id}
+                    onChange={(v) => update("general", { ga4_measurement_id: v })}
+                    placeholder="G-XXXXXXXXXX"
+                  />
+                  <TextField
+                    label="Meta Pixel ID"
+                    value={content.general.meta_pixel_id}
+                    onChange={(v) => update("general", { meta_pixel_id: v })}
+                    placeholder="123456789012345"
+                  />
+                </div>
+                <TextField
+                  label="Google Search Console Doğrulama Kodu"
+                  value={content.general.search_console_verification}
+                  onChange={(v) => update("general", { search_console_verification: v })}
+                  hint='yalnızca "content" değeri, meta etiketin tamamı değil'
+                  placeholder="abc123..."
+                />
+              </FieldGroup>
             </SectionCard>
           )}
 
