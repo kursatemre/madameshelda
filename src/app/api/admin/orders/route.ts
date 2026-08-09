@@ -14,7 +14,7 @@ export async function GET() {
   const supabase = await createServiceClient();
   const { data, error } = await supabase
     .from("orders")
-    .select("id, ref, full_name, email, phone, address, city, note, items, total, payment_method, status, created_at")
+    .select("id, ref, full_name, email, phone, address, city, note, items, total, payment_method, status, coupon_code, discount_amount, created_at")
     .order("created_at", { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

@@ -36,6 +36,8 @@ interface Order {
   total: number;
   payment_method: "havale" | "whatsapp";
   status: Status;
+  coupon_code: string | null;
+  discount_amount: number;
   created_at: string;
 }
 
@@ -174,7 +176,25 @@ export default function AdminBasvurularPage() {
                               </span>
                             </div>
                           ))}
-                          <div className="flex justify-between pt-2 border-t border-sand mt-1">
+                          {order.discount_amount > 0 && (
+                            <>
+                              <div className="flex justify-between pt-2 border-t border-sand mt-1">
+                                <span className="font-label text-[#888480] text-[0.6rem]">Ara Toplam</span>
+                                <span className="font-label text-[#888480] text-[0.6rem]">
+                                  ₺{(order.total + order.discount_amount).toLocaleString("tr-TR")}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="font-label text-brown text-[0.6rem]">
+                                  İndirim{order.coupon_code ? ` (${order.coupon_code})` : ""}
+                                </span>
+                                <span className="font-label text-brown text-[0.6rem]">
+                                  -₺{order.discount_amount.toLocaleString("tr-TR")}
+                                </span>
+                              </div>
+                            </>
+                          )}
+                          <div className={`flex justify-between ${order.discount_amount > 0 ? "" : "pt-2 border-t border-sand mt-1"}`}>
                             <span className="font-label text-[#888480] text-[0.6rem]">Toplam</span>
                             <span className="font-serif text-brown text-lg" style={{ fontStyle: "italic" }}>
                               ₺{order.total.toLocaleString("tr-TR")}
